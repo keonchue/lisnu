@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lisnu — AI 시뮬레이션</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232563eb'/><text x='16' y='23' text-anchor='middle' fill='white' font-family='system-ui,sans-serif' font-weight='900' font-size='14' letter-spacing='-0.5'>Li</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f8fafc; --surface: #ffffff; --border: rgba(0,0,0,0.08);
+      --text: #0f172a; --muted: #64748b; --subtle: #94a3b8;
+      --accent: #2563eb; --accent-light: rgba(37,99,235,0.08);
+      --accent-hover: #1d4ed8; --green: #16a34a; --green-light: rgba(22,163,74,0.09);
+      --red: #dc2626; --red-light: rgba(220,38,38,0.08);
+      --amber: #d97706; --amber-light: rgba(217,119,6,0.10);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.07); --shadow: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 30px rgba(0,0,0,0.12); --radius: 12px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+
+    /* ── NAV ── */
+    nav { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid var(--border); padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .wordmark { font-family: 'Space Grotesk', sans-serif; font-size: 1.18rem; font-weight: 800; letter-spacing: -0.055em; color: #0f172a; }
+    .wordmark .wa { color: #2563eb; }
+    .nav-divider { width: 1px; height: 18px; background: rgba(0,0,0,0.12); }
+    .nav-univ-logo { height: 16px; opacity: 0.7; }
+    .nav-links { display: flex; align-items: center; gap: 4px; }
+    .nav-link { padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; transition: all 0.15s; }
+    .nav-link:hover { background: var(--bg); color: var(--text); }
+    .nav-link.active { color: var(--accent); font-weight: 600; background: var(--accent-light); }
+    .btn { padding: 8px 18px; border-radius: 8px; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.18s; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg); color: var(--text); }
+    .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 7px; }
+    .btn-danger-soft { background: var(--red-light); color: var(--red); border: none; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-danger-soft:hover { background: rgba(220,38,38,0.16); }
+
+    /* ── PAGE HEADER ── */
+    .page-header { max-width: 960px; margin: 0 auto; padding: 28px 24px 0; }
+    .page-header-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 4px; }
+    .page-header-sub { font-size: 13px; color: var(--muted); }
+    .badge-new { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; }
+    .badge-new .dot { width: 5px; height: 5px; background: var(--accent); border-radius: 50%; }
+
+    /* ── STEP BAR ── */
+    .step-bar { max-width: 960px; margin: 20px auto 0; padding: 0 24px; display: flex; align-items: center; gap: 0; }
+    .step-item { display: flex; align-items: center; gap: 10px; flex: 1; }
+    .step-item:last-child { flex: 0; }
+    .step-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; transition: all 0.3s; border: 2px solid var(--border); color: var(--subtle); background: var(--surface); }
+    .step-circle.active { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .step-circle.done { border-color: var(--green); background: var(--green); color: #fff; }
+    .step-label { font-size: 13px; font-weight: 500; color: var(--subtle); transition: color 0.3s; white-space: nowrap; }
+    .step-label.active { color: var(--accent); font-weight: 600; }
+    .step-label.done { color: var(--green); font-weight: 600; }
+    .step-line { flex: 1; height: 2px; background: var(--border); margin: 0 10px; border-radius: 2px; transition: background 0.3s; }
+    .step-line.done { background: var(--green); }
+
+    /* ── MAIN LAYOUT ── */
+    .main { max-width: 960px; margin: 0 auto; padding: 24px 24px 80px; }
+    .panel { display: none; }
+    .panel.active { display: block; animation: fadeUp 0.3s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+    /* ── CARDS ── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 16px; }
+    .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .card-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+    input[type=text], input[type=password], input[type=number], select, textarea {
+      width: 100%; padding: 10px 13px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 14px;
+      color: var(--text); outline: none; transition: border 0.15s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+    textarea { resize: vertical; min-height: 60px; }
+    .hint { font-size: 12px; color: var(--subtle); margin-top: 4px; }
+    .row { display: flex; gap: 12px; }
+    .row .form-group { flex: 1; }
+    input[type=range] { width: 100%; accent-color: var(--accent); }
+    .range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--subtle); margin-top: 2px; }
+
+    /* ── API KEY SECTION ── */
+    .api-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+    .api-tab { padding: 7px 18px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted); transition: all 0.15s; }
+    .api-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .key-field { display: flex; gap: 8px; }
+    .key-field input { flex: 1; font-family: monospace; font-size: 13px; }
+    .key-status { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; font-weight: 600; }
+    .key-status.ok { color: var(--green); }
+    .key-status.err { color: var(--red); }
+    .key-status.idle { color: var(--subtle); }
+
+    /* ── QUESTION BUILDER ── */
+    .q-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+    .q-item { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .q-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .q-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .q-header input { flex: 1; font-size: 14px; font-weight: 500; }
+    .q-type-toggle { display: flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; flex-shrink: 0; }
+    .q-type-btn { padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer; background: none; border: none; color: var(--muted); transition: all 0.15s; }
+    .q-type-btn.active { background: var(--accent); color: #fff; }
+    .q-options { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .q-opt-row { display: flex; align-items: center; gap: 8px; }
+    .q-opt-num { font-size: 12px; font-weight: 700; color: var(--muted); width: 16px; flex-shrink: 0; }
+    .q-opt-row input { flex: 1; font-size: 13px; padding: 7px 10px; }
+    .q-opt-del { background: none; border: none; color: var(--subtle); font-size: 16px; cursor: pointer; padding: 2px 4px; border-radius: 4px; line-height: 1; }
+    .q-opt-del:hover { color: var(--red); }
+    .add-opt-btn { font-size: 12px; color: var(--accent); background: none; border: none; cursor: pointer; font-weight: 600; margin-top: 4px; padding: 4px 0; }
+    .add-opt-btn:hover { text-decoration: underline; }
+    .q-free-hint { font-size: 12px; color: var(--subtle); margin-top: 6px; padding: 8px 10px; background: var(--surface); border-radius: 6px; border: 1px dashed var(--border); }
+
+    /* ── DEMO PRESETS ── */
+    .preset-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .preset-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 600; cursor: pointer; color: var(--muted); transition: all 0.15s; }
+    .preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── PROGRESS PANEL ── */
+    .progress-card { text-align: center; padding: 48px 24px; }
+    .progress-icon { font-size: 3rem; margin-bottom: 16px; }
+    .progress-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
+    .progress-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+    .progress-bar-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 100px; height: 10px; overflow: hidden; max-width: 400px; margin: 0 auto 12px; }
+    .progress-bar-fill { height: 10px; background: linear-gradient(90deg, var(--accent), #60a5fa); border-radius: 100px; transition: width 0.4s; }
+    .progress-count { font-size: 13px; color: var(--subtle); }
+    .progress-cost { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .live-log { max-width: 400px; margin: 20px auto 0; text-align: left; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; max-height: 120px; overflow-y: auto; }
+    .log-line { font-size: 12px; color: var(--muted); line-height: 1.8; }
+    .log-line.ok { color: var(--green); }
+    .log-line.err { color: var(--red); }
+
+    /* ── RESULTS ── */
+    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .results-title { font-size: 1.1rem; font-weight: 700; }
+    .results-meta { font-size: 13px; color: var(--muted); }
+    .results-grid { display: flex; flex-direction: column; gap: 16px; }
+    .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); }
+    .result-q { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .result-q-id { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+    .chart-wrap { position: relative; height: 180px; }
+    .result-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 14px; }
+    .result-table th { text-align: left; padding: 6px 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtle); border-bottom: 1px solid var(--border); }
+    .result-table td { padding: 7px 10px; border-bottom: 1px solid var(--bg); }
+    .result-table tr:last-child td { border-bottom: none; }
+    .result-table .pct { font-weight: 700; color: var(--accent); }
+    .summary-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .summary-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; flex: 1; min-width: 120px; text-align: center; }
+    .summary-chip .num { font-size: 1.6rem; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+    .summary-chip .lbl { font-size: 11px; color: var(--subtle); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .free-answers { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .free-answer-row { display: flex; align-items: center; gap: 10px; }
+    .free-answer-name { font-weight: 600; min-width: 80px; font-size: 13px; }
+    .free-answer-bar-wrap { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+    .free-answer-bar { height: 8px; background: var(--accent); border-radius: 4px; }
+    .free-answer-pct { font-size: 12px; color: var(--muted); width: 40px; text-align: right; }
+
+    /* ── ALERT ── */
+    .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 8px; }
+    .alert-warn { background: var(--amber-light); color: #92400e; border: 1px solid rgba(217,119,6,0.2); }
+    .alert-info { background: var(--accent-light); color: #1e40af; border: 1px solid rgba(37,99,235,0.2); }
+
+    /* ── ACTIONS ── */
+    .panel-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 640px) {
+      nav { padding: 0 16px; }
+      .main { padding: 16px 16px 60px; }
+      .card-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <span class="wordmark">Li<span class="wa">snu</span></span>
+    <div class="nav-divider"></div>
+    <img src="./Seoul_national_university_logotype-1.svg" class="nav-univ-logo" alt="서울대" />
+  </a>
+  <div class="nav-links">
+    <a href="app.html" class="nav-link">설문 탐색</a>
+    <a href="simulator.html" class="nav-link active">AI 시뮬레이션</a>
+  </div>
+  <button class="btn btn-primary btn-sm" onclick="location.href='app.html'">설문 탐색 →</button>
+</nav>
+
+<!-- ── PAGE HEADER ── -->
+<div class="page-header">
+  <div class="badge-new"><div class="dot"></div>Beta</div>
+  <div class="page-header-title">AI 시뮬레이션</div>
+  <div class="page-header-sub">설문을 올리기 전, AI 페르소나로 응답 분포를 미리 예측해보세요</div>
+</div>
+
+<!-- ── STEP BAR ── -->
+<div class="step-bar" id="stepBar">
+  <div class="step-item">
+    <div class="step-circle active" id="sc1">1</div>
+    <div class="step-label active" id="sl1">설정</div>
+  </div>
+  <div class="step-line" id="sline1"></div>
+  <div class="step-item">
+    <div class="step-circle" id="sc2">2</div>
+    <div class="step-label" id="sl2">문항</div>
+  </div>
+  <div class="step-line" id="sline2"></div>
+  <div class="step-item">
+    <div class="step-circle" id="sc3">3</div>
+    <div class="step-label" id="sl3">결과</div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- ═══ PANEL 1: 설정 ═══ -->
+  <div class="panel active" id="panel1">
+
+    <!-- API 키 -->
+    <div class="card">
+      <div class="card-title">API 키 설정</div>
+      <div class="card-sub">키는 이 탭을 닫으면 자동으로 삭제됩니다 (sessionStorage 저장)</div>
+
+      <div class="alert alert-warn">
+        ⚠️ 브라우저에서 직접 API를 호출합니다. 실제 서비스에는 백엔드 프록시를 사용하세요.
+      </div>
+
+      <div class="api-tabs">
+        <button class="api-tab active" onclick="selectModel('openai', this)">GPT-4o-mini</button>
+        <button class="api-tab" onclick="selectModel('claude', this)">Claude Haiku</button>
+      </div>
+
+      <div id="openai-key-section">
+        <div class="form-group">
+          <label>OpenAI API Key</label>
+          <div class="key-field">
+            <input type="password" id="openaiKey" placeholder="sk-proj-..." autocomplete="off" oninput="saveKey('openai', this.value)" />
+            <button class="btn btn-ghost btn-sm" onclick="testKey('openai')">테스트</button>
+          </div>
+          <div class="key-status idle" id="openaiStatus">● 미확인</div>
+        </div>
+      </div>
+
+      <div id="claude-key-section" style="display:none">
+        <div class="form-group">
+          <label>Anthropic API Key</label>
+          <div class="key-field">
+            <input type="password" id="claudeKey" placeholder="sk-ant-api03-..." autocomplete="off" oninput="saveKey('claude', this.value)" />
+            <button class="btn btn-ghost btn-sm" onclick="testKey('claude')">테스트</button>
+          </div>
+          <div class="key-status idle" id="claudeStatus">● 미확인</div>
+          <div class="hint" style="margin-top:6px">* Anthropic API는 CORS 정책으로 브라우저 직접 호출이 제한될 수 있습니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 페르소나 설정 -->
+    <div class="card">
+      <div class="card-title">페르소나 설정</div>
+      <div class="card-sub">AI에게 부여할 한국인 인구통계 프로필을 설정하세요</div>
+
+      <div class="form-group">
+        <label>페르소나 수: <span id="nLabel" style="color:var(--accent)">30명</span></label>
+        <input type="range" id="nRange" min="5" max="100" value="30" step="5"
+          oninput="document.getElementById('nLabel').textContent = this.value + '명'; state.n = +this.value" />
+        <div class="range-labels"><span>5명</span><span>100명</span></div>
+        <div class="hint">많을수록 정확하지만 API 비용이 높아집니다</div>
+      </div>
+
+      <div class="card-grid">
+        <div class="form-group">
+          <label>최소 연령</label>
+          <input type="number" id="ageMin" value="19" min="19" max="79" />
+        </div>
+        <div class="form-group">
+          <label>최대 연령</label>
+          <input type="number" id="ageMax" value="69" min="20" max="80" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>지역 (복수 선택, 비워두면 전국)</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px" id="regionCheckboxes"></div>
+      </div>
+
+      <div class="form-group">
+        <label>교육 수준 (복수 선택, 비워두면 전체)</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px" id="eduCheckboxes"></div>
+      </div>
+    </div>
+
+    <div class="panel-actions">
+      <button class="btn btn-primary" onclick="goStep(2)">다음: 문항 설정 →</button>
+    </div>
+  </div>
+
+  <!-- ═══ PANEL 2: 문항 ═══ -->
+  <div class="panel" id="panel2">
+
+    <div class="card">
+      <div class="card-title">문항 설정</div>
+      <div class="card-sub">최대 9개까지 추가할 수 있습니다</div>
+
+      <div class="alert alert-info">
+        💡 예시 문항을 불러와서 바로 시작해보세요
+      </div>
+
+      <div class="preset-bar">
+        <button class="preset-btn" onclick="loadPreset('gallup')">📊 갤럽 스타일 (경기전망 + 정당지지)</button>
+        <button class="preset-btn" onclick="loadPreset('consumer')">🛒 소비자 설문 (소비행동 2문항)</button>
+        <button class="preset-btn" onclick="loadPreset('custom')">✏️ 새 문항만</button>
+      </div>
+
+      <div class="q-list" id="qList"></div>
+
+      <button class="btn btn-ghost btn-sm" onclick="addQuestion()" id="addQBtn">＋ 문항 추가</button>
+    </div>
+
+    <div class="panel-actions">
+      <button class="btn btn-ghost" onclick="goStep(1)">← 이전</button>
+      <button class="btn btn-primary" onclick="runSimulation()" id="runBtn">🚀 시뮬레이션 실행</button>
+    </div>
+  </div>
+
+  <!-- ═══ PANEL 3: 실행 중 / 결과 ═══ -->
+  <div class="panel" id="panel3">
+
+    <!-- 실행 중 -->
+    <div class="card" id="progressPanel">
+      <div class="progress-card">
+        <div class="progress-icon">🤖</div>
+        <div class="progress-title" id="progTitle">AI 페르소나 응답 수집 중...</div>
+        <div class="progress-sub" id="progSub">잠시만 기다려주세요</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progBar" style="width:0%"></div>
+        </div>
+        <div class="progress-count" id="progCount">0 / 0</div>
+        <div class="progress-cost" id="progCost"></div>
+        <div class="live-log" id="liveLog"></div>
+      </div>
+    </div>
+
+    <!-- 결과 -->
+    <div id="resultsPanel" style="display:none">
+      <div class="results-header">
+        <div>
+          <div class="results-title">시뮬레이션 결과</div>
+          <div class="results-meta" id="resultsMeta"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="goStep(2)">← 문항 수정</button>
+          <button class="btn btn-primary btn-sm" onclick="downloadResults()">↓ CSV 저장</button>
+        </div>
+      </div>
+
+      <div class="summary-bar" id="summaryBar"></div>
+      <div class="results-grid" id="resultsGrid"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// 상태
+// ═══════════════════════════════════════════
+const state = {
+  model: 'openai',
+  n: 30,
+  questions: [],
+  personas: [],
+  results: [],
+  totalCost: 0,
+  charts: []
+};
+
+// ═══════════════════════════════════════════
+// 한국 인구통계 분포 (2023 추정)
+// ═══════════════════════════════════════════
+const KR_REGION = [
+  ['서울',0.19],['부산',0.07],['대구',0.05],['인천',0.06],['광주',0.03],
+  ['대전',0.03],['울산',0.02],['세종',0.01],['경기',0.26],['강원',0.03],
+  ['충북',0.03],['충남',0.04],['전북',0.04],['전남',0.03],['경북',0.05],
+  ['경남',0.07],['제주',0.01]
+];
+const KR_EDU = [
+  ['초등학교 졸업',0.08],['중학교 졸업',0.12],['고등학교 졸업',0.36],
+  ['2~3년제 대학 졸업',0.11],['4년제 대학 졸업',0.26],['대학원 석사 졸업',0.06],['대학원 박사 졸업',0.01]
+];
+const KR_MARITAL = [['미혼',0.32],['배우자 있음 (기혼)',0.56],['사별',0.06],['이혼',0.05],['별거',0.01]];
+const KR_INCOME = [
+  ['월 100만원 미만',0.07],['월 100~200만원',0.11],['월 200~300만원',0.16],
+  ['월 300~400만원',0.18],['월 400~500만원',0.15],['월 500~600만원',0.11],
+  ['월 600~700만원',0.08],['월 700~800만원',0.07],['월 800만원 이상',0.07]
+];
+const KR_SUBJ = [
+  ['매우 여유 있음',0.03],['약간 여유 있음',0.16],['적정함',0.38],
+  ['약간 부족함',0.33],['매우 부족함',0.10]
+];
+
+function sample(dist) {
+  let r = Math.random(), cum = 0;
+  for (const [v, p] of dist) { cum += p; if (r < cum) return v; }
+  return dist[dist.length-1][0];
+}
+
+function generatePersonas(n, ageMin=19, ageMax=69, regions=[], edus=[]) {
+  const personas = [];
+  for (let i = 0; i < n; i++) {
+    const sex = Math.random() < 0.5 ? '남자' : '여자';
+    const age = Math.floor(Math.random() * (ageMax - ageMin + 1)) + ageMin;
+    let region = sample(KR_REGION);
+    if (regions.length > 0) region = regions[Math.floor(Math.random() * regions.length)];
+    let edu = sample(KR_EDU);
+    if (edus.length > 0) edu = edus[Math.floor(Math.random() * edus.length)];
+    const marital = sample(KR_MARITAL);
+    const income = sample(KR_INCOME);
+    const subj = sample(KR_SUBJ);
+    const demo = { 성별: sex, 나이: `${age}세`, 거주지역: region, 교육수준: edu, 혼인상태: marital, '가구 월소득': income, '주관적 경제 상태': subj };
+    const lines = Object.entries(demo).map(([k,v]) => `- ${k}: ${v}`).join('\n');
+    const systemPrompt = `당신은 다음 인구통계 특성을 가진 대한민국 국민입니다.\n\n${lines}\n\n지침:\n(1) 위 특성을 가진 실제 한국인으로서 솔직하게 답하세요.\n(2) AI가 아닌 일상 경험에서 답하세요.\n(3) 모든 응답은 반드시 다음 JSON 형식으로만 출력하세요. 다른 텍스트는 절대 포함하지 마세요.\n{"answer": <선택지 번호 또는 텍스트>, "reasoning": "<한 문장 이유>"}`;
+    personas.push({ id: i+1, demographics: demo, systemPrompt });
+  }
+  return personas;
+}
+
+// ═══════════════════════════════════════════
+// API 호출
+// ═══════════════════════════════════════════
+function buildUserPrompt(q) {
+  if (q.type === 'choice') {
+    const opts = q.options.map((o, i) => `  ${i+1}. ${o}`).join('\n');
+    return `다음 질문에 답해주세요.\n\n질문: ${q.text}\n\n선택지:\n${opts}\n\n반드시 JSON 형식으로만 답하세요: {"answer": <번호>, "reasoning": "<한 문장>"}`;
+  } else {
+    return `다음 질문에 답해주세요.\n\n질문: ${q.text}\n\n반드시 JSON 형식으로만 답하세요: {"answer": "<답변>", "reasoning": "<한 문장>"}`;
+  }
+}
+
+function parseJSON(raw) {
+  const m = raw.match(/\{[\s\S]*?\}/);
+  if (m) { try { return JSON.parse(m[0]); } catch(e) {} }
+  return null;
+}
+
+async function callOpenAI(systemPrompt, userPrompt, key) {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+      max_tokens: 150, temperature: 0.7
+    })
+  });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'API 오류'); }
+  const data = await res.json();
+  const raw = data.choices[0].message.content;
+  const tokens = data.usage;
+  const cost = tokens.prompt_tokens * 0.15/1e6 + tokens.completion_tokens * 0.60/1e6;
+  return { parsed: parseJSON(raw), raw, cost };
+}
+
+async function callClaude(systemPrompt, userPrompt, key) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-allow-browser': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 150,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }]
+    })
+  });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'API 오류'); }
+  const data = await res.json();
+  const raw = data.content[0].text;
+  const cost = data.usage.input_tokens * 0.80/1e6 + data.usage.output_tokens * 4.00/1e6;
+  return { parsed: parseJSON(raw), raw, cost };
+}
+
+// ═══════════════════════════════════════════
+// API 키 저장 / 테스트
+// ═══════════════════════════════════════════
+function saveKey(model, val) {
+  sessionStorage.setItem(`apiKey_${model}`, val);
+}
+
+function getKey(model) {
+  const el = model === 'openai' ? document.getElementById('openaiKey') : document.getElementById('claudeKey');
+  return el?.value || sessionStorage.getItem(`apiKey_${model}`) || '';
+}
+
+async function testKey(model) {
+  const key = getKey(model);
+  const statusEl = document.getElementById(model === 'openai' ? 'openaiStatus' : 'claudeStatus');
+  if (!key) { statusEl.textContent = '● 키를 입력해주세요'; statusEl.className = 'key-status err'; return; }
+  statusEl.textContent = '● 확인 중...'; statusEl.className = 'key-status idle';
+  try {
+    if (model === 'openai') {
+      await callOpenAI('Say OK', 'Say OK', key);
+    } else {
+      await callClaude('Say OK', 'Say OK', key);
+    }
+    statusEl.textContent = '● 연결 성공'; statusEl.className = 'key-status ok';
+  } catch(e) {
+    statusEl.textContent = `● 오류: ${e.message.slice(0,50)}`; statusEl.className = 'key-status err';
+  }
+}
+
+function selectModel(model, btn) {
+  state.model = model;
+  document.querySelectorAll('.api-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('openai-key-section').style.display = model === 'openai' ? '' : 'none';
+  document.getElementById('claude-key-section').style.display = model === 'claude' ? '' : 'none';
+}
+
+// ═══════════════════════════════════════════
+// 문항 관리
+// ═══════════════════════════════════════════
+function addQuestion(text='', type='choice', options=['','','',''], prefill=false) {
+  if (state.questions.length >= 9) { alert('최대 9개까지 추가할 수 있습니다.'); return; }
+  const q = { id: Date.now(), text, type, options: options.filter(o => o !== undefined) };
+  state.questions.push(q);
+  renderQuestions();
+}
+
+function removeQuestion(id) {
+  state.questions = state.questions.filter(q => q.id !== id);
+  renderQuestions();
+}
+
+function updateQuestion(id, field, value) {
+  const q = state.questions.find(q => q.id === id);
+  if (q) q[field] = value;
+}
+
+function updateOption(qId, idx, value) {
+  const q = state.questions.find(q => q.id === qId);
+  if (q) q.options[idx] = value;
+}
+
+function addOption(qId) {
+  const q = state.questions.find(q => q.id === qId);
+  if (q && q.options.length < 6) { q.options.push(''); renderQuestions(); }
+}
+
+function removeOption(qId, idx) {
+  const q = state.questions.find(q => q.id === qId);
+  if (q && q.options.length > 2) { q.options.splice(idx, 1); renderQuestions(); }
+}
+
+function setQType(id, type, btn) {
+  const q = state.questions.find(q => q.id === id);
+  if (q) { q.type = type; renderQuestions(); }
+}
+
+function renderQuestions() {
+  const list = document.getElementById('qList');
+  const addBtn = document.getElementById('addQBtn');
+  list.innerHTML = '';
+  state.questions.forEach((q, qi) => {
+    const div = document.createElement('div');
+    div.className = 'q-item';
+    const optsHtml = q.type === 'choice' ? `
+      <div class="q-options">
+        ${q.options.map((o, i) => `
+          <div class="q-opt-row">
+            <span class="q-opt-num">${i+1}.</span>
+            <input type="text" value="${escHtml(o)}" placeholder="선택지 ${i+1}"
+              oninput="updateOption(${q.id}, ${i}, this.value)" />
+            ${q.options.length > 2 ? `<button class="q-opt-del" onclick="removeOption(${q.id}, ${i})">×</button>` : ''}
+          </div>`).join('')}
+        ${q.options.length < 6 ? `<button class="add-opt-btn" onclick="addOption(${q.id})">+ 선택지 추가</button>` : ''}
+      </div>` : `<div class="q-free-hint">자유응답 — AI가 텍스트로 답변합니다 (예: 선수 이름, 인물 이름)</div>`;
+
+    div.innerHTML = `
+      <div class="q-header">
+        <div class="q-num">${qi+1}</div>
+        <input type="text" value="${escHtml(q.text)}" placeholder="질문을 입력하세요" style="flex:1"
+          oninput="updateQuestion(${q.id}, 'text', this.value)" />
+        <div class="q-type-toggle">
+          <button class="q-type-btn ${q.type==='choice'?'active':''}" onclick="setQType(${q.id},'choice',this)">선택형</button>
+          <button class="q-type-btn ${q.type==='free'?'active':''}" onclick="setQType(${q.id},'free',this)">자유응답</button>
+        </div>
+        <button class="btn-danger-soft" onclick="removeQuestion(${q.id})">삭제</button>
+      </div>
+      ${optsHtml}`;
+    list.appendChild(div);
+  });
+  addBtn.style.display = state.questions.length >= 9 ? 'none' : '';
+}
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ═══════════════════════════════════════════
+// 프리셋
+// ═══════════════════════════════════════════
+function loadPreset(type) {
+  state.questions = [];
+  if (type === 'gallup') {
+    addQuestion('귀하는 앞으로 1년간 우리나라 경제가 현재에 비해 어떠할 것이라고 보십니까?', 'choice', ['좋아질 것', '나빠질 것', '비슷할 것', '모름/응답거절']);
+    addQuestion('귀하는 다음 중 어느 정당을 지지하십니까?', 'choice', ['더불어민주당', '국민의힘', '조국혁신당', '개혁신당', '기타정당', '무당층']);
+  } else if (type === 'consumer') {
+    addQuestion('귀하는 지속가능한 소비(친환경 제품 구매, 자원 절약 등)를 실천하고 계십니까?', 'choice', ['실천한다', '실천하지 않는다']);
+    addQuestion('귀하는 소비자교육 프로그램에 참여하실 의향이 있으십니까?', 'choice', ['있다', '없다']);
+  } else {
+    addQuestion('', 'choice', ['', '', '']);
+  }
+}
+
+// ═══════════════════════════════════════════
+// 시뮬레이션 실행
+// ═══════════════════════════════════════════
+async function runSimulation() {
+  const validQs = state.questions.filter(q => q.text.trim() && (q.type === 'free' || q.options.filter(o => o.trim()).length >= 2));
+  if (validQs.length === 0) { alert('유효한 문항을 최소 1개 이상 추가해주세요.'); return; }
+
+  const key = getKey(state.model);
+  if (!key) { alert('API 키를 먼저 입력해주세요.'); return; }
+
+  const ageMin = +document.getElementById('ageMin').value || 19;
+  const ageMax = +document.getElementById('ageMax').value || 69;
+  const regions = [...document.querySelectorAll('#regionCheckboxes input:checked')].map(el => el.value);
+  const edus = [...document.querySelectorAll('#eduCheckboxes input:checked')].map(el => el.value);
+
+  state.personas = generatePersonas(state.n, ageMin, ageMax, regions, edus);
+  state.results = [];
+  state.totalCost = 0;
+
+  goStep(3);
+  document.getElementById('progressPanel').style.display = '';
+  document.getElementById('resultsPanel').style.display = 'none';
+
+  const total = state.n * validQs.length;
+  let done = 0;
+  const log = document.getElementById('liveLog');
+
+  const addLog = (msg, cls='') => {
+    const d = document.createElement('div');
+    d.className = `log-line ${cls}`;
+    d.textContent = msg;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  };
+
+  // 결과 구조 초기화
+  const resultMap = {};
+  validQs.forEach(q => { resultMap[q.id] = { question: q, answers: [] }; });
+
+  for (let i = 0; i < state.personas.length; i++) {
+    const p = state.personas[i];
+    document.getElementById('progTitle').textContent = `페르소나 ${i+1} / ${state.n} 응답 수집 중...`;
+    document.getElementById('progSub').textContent = `${p.demographics['성별']} · ${p.demographics['나이']} · ${p.demographics['거주지역']}`;
+
+    for (const q of validQs) {
+      const prompt = buildUserPrompt(q);
+      try {
+        let res;
+        if (state.model === 'openai') {
+          res = await callOpenAI(p.systemPrompt, prompt, key);
+        } else {
+          res = await callClaude(p.systemPrompt, prompt, key);
+        }
+        state.totalCost += res.cost;
+        const ans = res.parsed?.answer ?? null;
+        resultMap[q.id].answers.push({ personaId: i, demographics: p.demographics, answer: ans, raw: res.raw });
+        done++;
+        const pct = Math.round(done/total*100);
+        document.getElementById('progBar').style.width = pct + '%';
+        document.getElementById('progCount').textContent = `${done} / ${total} 완료`;
+        document.getElementById('progCost').textContent = `누적 비용: $${state.totalCost.toFixed(4)}`;
+        if (done % 10 === 0) addLog(`✓ ${done}개 완료 (비용: $${state.totalCost.toFixed(4)})`, 'ok');
+      } catch(e) {
+        addLog(`✗ 오류: ${e.message.slice(0,60)}`, 'err');
+        resultMap[q.id].answers.push({ personaId: i, demographics: p.demographics, answer: null, raw: 'ERROR' });
+        done++;
+      }
+    }
+  }
+
+  state.results = Object.values(resultMap);
+  addLog(`✅ 완료! 총 비용: $${state.totalCost.toFixed(4)}`, 'ok');
+  showResults(validQs);
+}
+
+// ═══════════════════════════════════════════
+// 결과 표시
+// ═══════════════════════════════════════════
+function showResults(validQs) {
+  document.getElementById('progressPanel').style.display = 'none';
+  document.getElementById('resultsPanel').style.display = '';
+
+  const modelLabel = state.model === 'openai' ? 'GPT-4o-mini' : 'Claude Haiku 4.5';
+  document.getElementById('resultsMeta').textContent = `${state.n}명 × ${validQs.length}문항 · ${modelLabel} · $${state.totalCost.toFixed(4)}`;
+
+  // 요약 칩
+  const totalAnswers = state.results.reduce((s, r) => s + r.answers.length, 0);
+  const parsed = state.results.reduce((s, r) => s + r.answers.filter(a => a.answer !== null).length, 0);
+  document.getElementById('summaryBar').innerHTML = `
+    <div class="summary-chip"><div class="num">${state.n}</div><div class="lbl">페르소나</div></div>
+    <div class="summary-chip"><div class="num">${validQs.length}</div><div class="lbl">문항</div></div>
+    <div class="summary-chip"><div class="num">${Math.round(parsed/totalAnswers*100)}%</div><div class="lbl">파싱 성공</div></div>
+    <div class="summary-chip"><div class="num">$${state.totalCost.toFixed(4)}</div><div class="lbl">총 비용</div></div>`;
+
+  // 기존 차트 파괴
+  state.charts.forEach(c => c.destroy());
+  state.charts = [];
+
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = '';
+
+  state.results.forEach((r, idx) => {
+    const q = r.question;
+    const card = document.createElement('div');
+    card.className = 'result-card';
+
+    if (q.type === 'choice') {
+      const validOpts = q.options.filter(o => o.trim());
+      const counts = {};
+      validOpts.forEach((o, i) => { counts[i+1] = 0; });
+      r.answers.forEach(a => {
+        const n = parseInt(a.answer);
+        if (!isNaN(n) && counts[n] !== undefined) counts[n]++;
+      });
+      const total = Object.values(counts).reduce((s, v) => s + v, 0) || 1;
+
+      const tableRows = validOpts.map((o, i) => {
+        const pct = (counts[i+1]/total*100).toFixed(1);
+        return `<tr><td>${i+1}. ${escHtml(o)}</td><td class="pct">${pct}%</td><td>${counts[i+1]}명</td></tr>`;
+      }).join('');
+
+      card.innerHTML = `
+        <div class="result-q-id">문항 ${idx+1} · 선택형</div>
+        <div class="result-q">${escHtml(q.text)}</div>
+        <div class="chart-wrap"><canvas id="chart_${idx}"></canvas></div>
+        <table class="result-table">
+          <thead><tr><th>선택지</th><th>비율</th><th>응답</th></tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>`;
+      grid.appendChild(card);
+
+      requestAnimationFrame(() => {
+        const ctx = document.getElementById(`chart_${idx}`).getContext('2d');
+        const chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: validOpts.map((o, i) => `${i+1}. ${o.length > 10 ? o.slice(0,10)+'…' : o}`),
+            datasets: [{
+              label: 'AI 응답 분포',
+              data: validOpts.map((_, i) => +(counts[i+1]/total*100).toFixed(1)),
+              backgroundColor: 'rgba(37,99,235,0.75)',
+              borderColor: '#2563eb',
+              borderWidth: 1.5,
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, max: 100, ticks: { callback: v => v+'%', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+              x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+            }
+          }
+        });
+        state.charts.push(chart);
+      });
+
+    } else {
+      // 자유응답
+      const freq = {};
+      r.answers.forEach(a => {
+        const ans = String(a.answer || '').trim();
+        if (ans && ans !== 'null') freq[ans] = (freq[ans] || 0) + 1;
+      });
+      const sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0, 10);
+      const total = r.answers.length || 1;
+      const barsHtml = sorted.map(([name, cnt]) => `
+        <div class="free-answer-row">
+          <div class="free-answer-name">${escHtml(name)}</div>
+          <div class="free-answer-bar-wrap"><div class="free-answer-bar" style="width:${cnt/total*100}%"></div></div>
+          <div class="free-answer-pct">${(cnt/total*100).toFixed(1)}%</div>
+        </div>`).join('');
+      card.innerHTML = `
+        <div class="result-q-id">문항 ${idx+1} · 자유응답</div>
+        <div class="result-q">${escHtml(q.text)}</div>
+        <div class="free-answers" style="margin-top:14px">${barsHtml || '<div style="color:var(--muted);font-size:13px">응답 없음</div>'}</div>`;
+      grid.appendChild(card);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════
+// CSV 다운로드
+// ═══════════════════════════════════════════
+function downloadResults() {
+  const rows = [['문항', '선택지', '비율(%)', '응답수']];
+  state.results.forEach(r => {
+    const q = r.question;
+    if (q.type === 'choice') {
+      const validOpts = q.options.filter(o => o.trim());
+      const counts = {};
+      validOpts.forEach((_, i) => { counts[i+1] = 0; });
+      r.answers.forEach(a => { const n = parseInt(a.answer); if (!isNaN(n) && counts[n] !== undefined) counts[n]++; });
+      const total = Object.values(counts).reduce((s,v) => s+v, 0) || 1;
+      validOpts.forEach((o, i) => {
+        rows.push([q.text, `${i+1}. ${o}`, (counts[i+1]/total*100).toFixed(1), counts[i+1]]);
+      });
+    } else {
+      const freq = {};
+      r.answers.forEach(a => { const v = String(a.answer||'').trim(); if(v&&v!=='null') freq[v]=(freq[v]||0)+1; });
+      Object.entries(freq).sort((a,b)=>b[1]-a[1]).forEach(([name, cnt]) => {
+        rows.push([q.text, name, (cnt/r.answers.length*100).toFixed(1), cnt]);
+      });
+    }
+  });
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'}));
+  a.download = `lisnu_sim_${Date.now()}.csv`;
+  a.click();
+}
+
+// ═══════════════════════════════════════════
+// 스텝 이동
+// ═══════════════════════════════════════════
+function goStep(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById(`panel${i}`).classList.toggle('active', i===n);
+    const sc = document.getElementById(`sc${i}`);
+    const sl = document.getElementById(`sl${i}`);
+    if (i < n) { sc.className='step-circle done'; sc.textContent='✓'; sl.className='step-label done'; }
+    else if (i===n) { sc.className='step-circle active'; sl.className='step-label active'; }
+    else { sc.className='step-circle'; sc.textContent=String(i); sl.className='step-label'; }
+    if (i < 3) { document.getElementById(`sline${i}`).className = 'step-line' + (i<n?' done':''); }
+  });
+}
+
+// ═══════════════════════════════════════════
+// 체크박스 UI 빌드
+// ═══════════════════════════════════════════
+function buildCheckboxes() {
+  const rc = document.getElementById('regionCheckboxes');
+  KR_REGION.forEach(([name]) => {
+    const label = document.createElement('label');
+    label.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;';
+    label.innerHTML = `<input type="checkbox" value="${name}" style="accent-color:var(--accent);width:13px;height:13px"/> ${name}`;
+    rc.appendChild(label);
+  });
+  const ec = document.getElementById('eduCheckboxes');
+  KR_EDU.forEach(([name]) => {
+    const label = document.createElement('label');
+    label.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;';
+    label.innerHTML = `<input type="checkbox" value="${name}" style="accent-color:var(--accent);width:13px;height:13px"/> ${name}`;
+    ec.appendChild(label);
+  });
+}
+
+// ═══════════════════════════════════════════
+// 초기화
+// ═══════════════════════════════════════════
+buildCheckboxes();
+loadPreset('gallup');
+</script>
+</body>
+</html>

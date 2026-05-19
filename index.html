@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lisnu — where listening leads to value</title>
+  <meta name="description" content="리스누는 듣고자 하는 연구자와 신뢰할 수 있는 응답자를 연결합니다." />
+  <meta property="og:title" content="Lisnu — where listening leads to value" />
+  <meta property="og:description" content="리스누는 듣고자 하는 연구자와 신뢰할 수 있는 응답자를 연결합니다." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232563eb'/><text x='16' y='23' text-anchor='middle' fill='white' font-family='system-ui,sans-serif' font-weight='900' font-size='14' letter-spacing='-0.5'>Li</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #080c14;
+      --white: #ffffff;
+      --blue: #2563eb;
+      --blue-light: #60a5fa;
+      --blue-dim: rgba(37,99,235,0.15);
+      --gray: #f3f4f6;
+      --navy: #0f172a;
+      --muted: #94a3b8;
+    }
+
+    html { scroll-snap-type: y mandatory; overflow-y: scroll; height: 100%; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--black); color: var(--white); overflow-x: hidden; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      padding: 20px 48px; display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.4s, backdrop-filter 0.4s, padding 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(8,12,20,0.85); backdrop-filter: blur(16px);
+      padding: 14px 48px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; }
+    .wordmark {
+      font-family: 'Space Grotesk', 'DM Sans', sans-serif;
+      font-size: 1.22rem; font-weight: 800; letter-spacing: -0.055em; color: var(--white);
+    }
+    .wordmark .wa { color: #60a5fa; }
+    .nav-logo-text { font-size: 1.15rem; font-weight: 800; color: var(--white); letter-spacing: -0.03em; }
+    .nav-divider { width: 1px; height: 18px; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+    .nav-univ-logo { height: 18px; width: auto; filter: brightness(0) invert(1); opacity: 0.85; }
+    .nav-cta {
+      padding: 9px 22px; background: var(--blue); color: var(--white);
+      border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: background 0.18s, transform 0.18s;
+    }
+    .nav-cta:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+    /* ── HERO WORD ANIMATION ── */
+    .ha-word { display: inline-block; }
+    .ha-up { font-size: 0.82em; -webkit-text-fill-color: rgba(255,255,255,0.45) !important; background: none; }
+
+    body.ready .ha-word { opacity: 0; }
+    body.ready .ha-left {
+      transform: translateY(24px);
+      transition: opacity 1.05s cubic-bezier(0.16,1,0.3,1), transform 1.05s cubic-bezier(0.16,1,0.3,1);
+    }
+    body.ready .ha-right {
+      transform: translateY(24px);
+      transition: opacity 1.05s cubic-bezier(0.16,1,0.3,1) 0.52s, transform 1.05s cubic-bezier(0.16,1,0.3,1) 0.52s;
+    }
+    body.ready .ha-up {
+      transform: translateY(24px);
+      transition: opacity 1.05s cubic-bezier(0.16,1,0.3,1) 1.08s, transform 1.05s cubic-bezier(0.16,1,0.3,1) 1.08s;
+    }
+    .hero-anim.go .ha-word { opacity: 1; transform: none !important; }
+
+    /* connection visual */
+    .hero-connection {
+      display: flex; align-items: center; gap: 22px;
+      justify-content: center; margin: 4px auto 24px;
+      max-width: 400px;
+      transition: opacity 0.7s 1.15s;
+    }
+    body.ready .hero-connection { opacity: 0; }
+    .hero-anim.go ~ .hero-connection { opacity: 1; }
+    .hcon-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(255,255,255,0.28); white-space: nowrap;
+    }
+    .hcon-label.blue { color: rgba(96,165,250,0.55); }
+    .hcon-line {
+      position: relative; flex: 1; height: 18px; display: flex; align-items: center;
+    }
+    .hcon-track {
+      position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+      height: 1.5px; border-radius: 2px; background: rgba(255,255,255,0.08);
+    }
+    .hcon-fill {
+      position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      height: 1.5px; border-radius: 2px; width: 0%;
+      background: linear-gradient(to right, rgba(255,255,255,0.2), rgba(96,165,250,0.7));
+    }
+    .hcon-dot {
+      position: absolute; left: 0; top: 50%; transform: translate(-50%, -50%);
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #60a5fa; box-shadow: 0 0 12px rgba(96,165,250,0.9);
+      opacity: 0;
+    }
+    .hcon-endcap {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 5px; height: 5px; border-radius: 50%; opacity: 0;
+    }
+    .hcon-endcap-l { left: 0; transform: translate(-50%, -50%); background: rgba(255,255,255,0.35); }
+    .hcon-endcap-r { right: 0; transform: translate(50%, -50%); background: #60a5fa; box-shadow: 0 0 8px rgba(96,165,250,0.8); }
+    .hero-anim.go ~ .hero-connection .hcon-fill {
+      animation: hcLineFill 1.0s cubic-bezier(0.4,0,0.2,1) 1.25s forwards;
+    }
+    .hero-anim.go ~ .hero-connection .hcon-dot {
+      animation: hcDotTravel 1.0s cubic-bezier(0.4,0,0.2,1) 1.25s forwards;
+    }
+    .hero-anim.go ~ .hero-connection .hcon-endcap-l {
+      animation: hcEndcapIn 0.35s ease 1.18s forwards;
+    }
+    .hero-anim.go ~ .hero-connection .hcon-endcap-r {
+      animation: hcEndcapIn 0.35s ease 2.2s forwards, hcPulseR 2.2s ease 2.55s infinite;
+    }
+    @keyframes hcLineFill { to { width: 100%; } }
+    @keyframes hcDotTravel {
+      0% { left: 0%; opacity: 0; }
+      8% { opacity: 1; }
+      88% { opacity: 1; }
+      100% { left: 100%; opacity: 0; }
+    }
+    @keyframes hcEndcapIn { to { opacity: 0.7; } }
+    @keyframes hcPulseR {
+      0%, 100% { box-shadow: 0 0 8px rgba(96,165,250,0.8); transform: translate(50%,-50%) scale(1); }
+      50% { box-shadow: 0 0 0 6px rgba(96,165,250,0); transform: translate(50%,-50%) scale(1.3); }
+    }
+
+    /* ── HERO CINEMATIC STAGE ── */
+    .hero-stage { position: relative; margin-bottom: 16px; }
+    #heroPhrase {
+      transition: opacity 0.85s cubic-bezier(0.4,0,0.6,1), transform 0.85s cubic-bezier(0.4,0,0.6,1);
+    }
+    #heroPhrase.out { opacity: 0; transform: translateY(-18px); pointer-events: none; }
+    #heroWordmark {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+      transition: opacity 1s cubic-bezier(0.16,1,0.3,1);
+    }
+    body.ready #heroWordmark { opacity: 0; transform: translateY(12px); }
+    #heroWordmark { transition: opacity 1.4s cubic-bezier(0.16,1,0.3,1), transform 1.4s cubic-bezier(0.16,1,0.3,1); }
+    #heroWordmark.in { opacity: 1 !important; transform: none !important; pointer-events: auto; }
+    .hero-wordmark-big {
+      font-family: 'Space Grotesk', 'DM Sans', sans-serif;
+      font-size: clamp(2.6rem, 7vw, 5rem);
+      font-weight: 800; letter-spacing: -0.055em;
+      color: white; -webkit-text-fill-color: initial; background: none;
+    }
+    .hero-wordmark-big .wa { color: #60a5fa; }
+    #heroSub, #heroBtns {
+      transition: opacity 1.0s cubic-bezier(0.16,1,0.3,1), transform 1.0s cubic-bezier(0.16,1,0.3,1);
+    }
+    body.ready #heroSub, body.ready #heroBtns {
+      opacity: 0; transform: translateY(16px);
+    }
+    #heroSub.in { opacity: 1 !important; transform: none !important; }
+    #heroBtns.in { opacity: 1 !important; transform: none !important; transition-delay: 0.15s; }
+
+    /* ── SECTIONS ── */
+    section {
+      height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 0 48px; position: relative; overflow: hidden;
+      scroll-snap-align: start;
+    }
+    .section-inner { max-width: 1100px; width: 100%; }
+
+    /* ── ANIMATION BASE ── */
+    [data-anim] {
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    body.ready [data-anim] { opacity: 0; }
+    [data-anim="up"]     { transform: translateY(48px); }
+    [data-anim="left"]   { transform: translateX(-60px); }
+    [data-anim="right"]  { transform: translateX(60px); }
+    [data-anim="scale"]  { transform: scale(0.88); }
+    [data-anim="fade"]   { transform: none; }
+    [data-anim].visible  { opacity: 1 !important; transform: none !important; }
+
+    .delay-1 { transition-delay: 0.1s; }
+    .delay-2 { transition-delay: 0.22s; }
+    .delay-3 { transition-delay: 0.36s; }
+    .delay-4 { transition-delay: 0.52s; }
+
+    /* ── EYEBROW ── */
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--blue-light);
+      background: var(--blue-dim); padding: 6px 14px; border-radius: 20px;
+      margin-bottom: 24px;
+    }
+    .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue-light); }
+
+    /* ── SECTION 1: HERO ── */
+    #s1 { background: var(--black); text-align: center; }
+    #s1::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(37,99,235,0.18) 0%, transparent 70%);
+      pointer-events: none; z-index: 2;
+    }
+    .hero-photo {
+      position: absolute; inset: 0;
+      background-image: url('./snu_ui_download.png');
+      background-size: auto 520px;
+      background-position: 22% 47%;
+      background-repeat: no-repeat;
+      filter: grayscale(100%) brightness(1.1) contrast(0.9);
+      z-index: 0;
+    }
+    .hero-photo-overlay {
+      position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,12,20,0.45) 0%,
+        rgba(8,12,20,0.55) 40%,
+        rgba(8,12,20,0.80) 75%,
+        rgba(8,12,20,0.97) 100%
+      );
+    }
+    .grid-bg { z-index: 2; }
+    #s1 .section-inner { position: relative; z-index: 3; padding-top: 5vh; }
+    #s1 .scroll-hint { z-index: 3; }
+    .grid-bg {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.04;
+      background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-num {
+      font-size: clamp(3.4rem, 9vw, 7rem); font-weight: 900;
+      letter-spacing: -0.05em; line-height: 0.95;
+      background: linear-gradient(135deg, #fff 30%, rgba(255,255,255,0.4));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .hero-num .blue { background: none; -webkit-text-fill-color: #60a5fa; }
+    .hero-sub {
+      font-size: clamp(0.95rem, 2vw, 1.2rem); color: rgba(255,255,255,0.55);
+      max-width: 480px; margin: 0 auto 32px; line-height: 1.7; font-weight: 400;
+    }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-big {
+      padding: 16px 36px; border-radius: 12px; font-family: 'DM Sans', sans-serif;
+      font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+      border: none; letter-spacing: -0.01em;
+    }
+    .btn-big.primary { background: var(--blue); color: var(--white); }
+    .btn-big.primary:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 12px 32px rgba(37,99,235,0.4); }
+    .btn-big.ghost { background: rgba(255,255,255,0.08); color: var(--white); border: 1px solid rgba(255,255,255,0.15); }
+    .btn-big.ghost:hover { background: rgba(255,255,255,0.14); }
+    .scroll-hint {
+      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: rgba(255,255,255,0.3); font-size: 12px; font-weight: 500; letter-spacing: 0.08em;
+      text-transform: uppercase;
+      animation: bounce 2s infinite;
+      opacity: 0; transition: opacity 0.8s ease;
+    }
+    .scroll-hint svg { opacity: 0.4; }
+    @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+    /* ── SECTION 2: BROWSE ── */
+    #s2 { background: var(--white); color: #111827; }
+    .split { display: flex; align-items: center; gap: 80px; width: 100%; }
+    .split.reverse { flex-direction: row-reverse; }
+    .split-text { flex: 1; min-width: 0; }
+    .split-visual { flex: 1; min-width: 0; }
+    .section-num {
+      font-size: 11px; font-weight: 800; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--blue); margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.15; margin-bottom: 16px; color: #111827;
+    }
+    .section-title .accent { color: var(--blue); }
+    .section-desc { font-size: 1.05rem; color: #6b7280; line-height: 1.75; }
+    .section-desc strong { color: #111827; }
+
+    /* Survey card mockup */
+    .mockup-phone {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px;
+      padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.05);
+      max-width: 340px; margin: 0 auto;
+    }
+    .mockup-card {
+      background: white; border: 1px solid #e5e7eb; border-radius: 12px;
+      padding: 18px; margin-bottom: 10px; transition: transform 0.2s;
+    }
+    .mockup-card:last-child { margin-bottom: 0; }
+    .mockup-card-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+    .mockup-tag { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #f3f4f6; color: #6b7280; }
+    .mockup-tag.blue { background: #eff6ff; color: #2563eb; }
+    .mockup-tag.green { background: #f0fdf4; color: #16a34a; }
+    .mockup-card-title { font-size: 13px; font-weight: 600; color: #111827; margin-bottom: 10px; line-height: 1.4; }
+    .mockup-bar-wrap { height: 4px; background: #f3f4f6; border-radius: 4px; margin-bottom: 10px; overflow: hidden; }
+    .mockup-bar { height: 4px; background: #2563eb; border-radius: 4px; }
+    .mockup-card-meta { font-size: 11px; color: #9ca3af; margin-bottom: 10px; }
+    .mockup-btn-row { display: flex; gap: 6px; }
+    .mockup-btn { flex: 1; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; text-align: center; background: #2563eb; color: white; }
+    .mockup-btn.ghost { background: #f3f4f6; color: #374151; }
+
+    /* ── SECTION 3: GATE ── */
+    #s3 { background: var(--navy); }
+    #s3 .section-title { color: var(--white); }
+    #s3 .section-desc { color: var(--muted); }
+    .gate-visual {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; flex-wrap: wrap; margin-top: 36px;
+    }
+    .gate-step { display: flex; flex-direction: column; align-items: center; }
+    .gate-circle {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; font-weight: 800; position: relative;
+      transition: all 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    .gate-circle.empty { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.1); }
+    .gate-circle.done { background: var(--blue-dim); color: var(--blue-light); border: 2px solid rgba(96,165,250,0.4); }
+    .gate-circle.done.lit { background: var(--blue); color: white; border-color: var(--blue); box-shadow: 0 0 32px rgba(37,99,235,0.5); }
+    .gate-circle.unlock { background: linear-gradient(135deg, var(--blue), #7c3aed); color: white; border: none; box-shadow: 0 0 40px rgba(37,99,235,0.6); font-size: 1.8rem; }
+    .gate-label { font-size: 12px; color: var(--muted); margin-top: 10px; font-weight: 500; }
+    .gate-label.blue { color: var(--blue-light); }
+    .gate-connector {
+      width: 60px; height: 2px; margin: 0 4px; margin-bottom: 28px; border-radius: 2px;
+      background: rgba(255,255,255,0.08);
+      transition: background 0.5s;
+    }
+    .gate-connector.lit { background: var(--blue); box-shadow: 0 0 10px rgba(37,99,235,0.5); }
+    .gate-num-big {
+      font-size: clamp(4rem, 10vw, 7rem); font-weight: 900;
+      letter-spacing: -0.04em; text-align: center; margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--blue-light), var(--blue));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    #s3 .split-text { text-align: center; }
+
+    /* ── SECTION 4: UPLOAD ── */
+    #s4 { background: #f8fafc; color: #111827; }
+    .mockup-form {
+      background: white; border: 1px solid #e5e7eb; border-radius: 16px;
+      padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+      max-width: 360px; margin: 0 auto;
+    }
+    .mockup-form-title { font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 20px; }
+    .mockup-field { margin-bottom: 14px; }
+    .mockup-field-label { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .mockup-field-input {
+      width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb;
+      border-radius: 8px; font-size: 13px; color: #374151; background: #f9fafb;
+    }
+    .mockup-field-input.focused { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .mockup-submit { width: 100%; padding: 12px; background: #2563eb; color: white; border-radius: 8px; font-size: 14px; font-weight: 700; text-align: center; margin-top: 6px; }
+
+    /* ── SECTION 5: TRUST ── */
+    #s5 { background: var(--black); }
+    .trust-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
+    .trust-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 28px; transition: border-color 0.3s, background 0.3s;
+    }
+    .trust-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(96,165,250,0.3); }
+    .trust-icon { font-size: 2rem; margin-bottom: 14px; }
+    .trust-card h3 { font-size: 1.05rem; font-weight: 700; color: white; margin-bottom: 8px; }
+    .trust-card p { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* ── SECTION 6: CTA ── */
+    #s6 { background: var(--blue); text-align: center; }
+    #s6::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(255,255,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-title {
+      font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900;
+      letter-spacing: -0.05em; line-height: 1.05; color: white;
+      margin-bottom: 24px;
+    }
+    .cta-sub { font-size: 1.15rem; color: rgba(255,255,255,0.7); margin-bottom: 48px; font-weight: 400; }
+    .btn-white {
+      padding: 18px 48px; background: white; color: var(--blue);
+      border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif;
+      font-size: 17px; font-weight: 800; cursor: pointer; letter-spacing: -0.02em;
+      transition: all 0.2s; text-decoration: none; display: inline-block;
+    }
+    .btn-white:hover { transform: translateY(-3px); box-shadow: 0 16px 48px rgba(0,0,0,0.25); }
+
+    /* ── SLIDE NAV DOTS ── */
+    .slide-nav {
+      position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 10px; z-index: 400;
+    }
+    .slide-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.3); cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+      border: none; padding: 0;
+    }
+    .slide-dot.active { background: #fff; transform: scale(1.5); }
+    .slide-dot.dark { background: rgba(0,0,0,0.2); }
+    .slide-dot.dark.active { background: #2563eb; }
+
+    /* ── FOOTER (inside s6) ── */
+    .footer-inline {
+      position: absolute; bottom: 28px; left: 0; right: 0; text-align: center;
+      font-size: 12px; color: rgba(255,255,255,0.3); pointer-events: none;
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      nav { padding: 16px 20px; }
+      nav.scrolled { padding: 12px 20px; }
+      section { padding: 0 20px; }
+      .split, .split.reverse { flex-direction: column; gap: 36px; }
+      .trust-cards { grid-template-columns: 1fr; gap: 12px; }
+      .trust-card { padding: 20px; }
+      .gate-connector { width: 32px; }
+      .gate-circle { width: 56px; height: 56px; font-size: 1.1rem; }
+      .slide-nav { display: none; }
+      .section-title { font-size: clamp(1.6rem, 5vw, 2.5rem); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav id="nav">
+  <div class="nav-logo">
+    <span class="wordmark">Li<span class="wa">snu</span></span>
+    <div class="nav-divider"></div>
+    <img src="./Seoul_national_university_logotype-1.svg" class="nav-univ-logo" alt="서울대학교" />
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="nav-cta" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);" onclick="location.href='simulator.html'">AI 시뮬레이션</button>
+    <button class="nav-cta" onclick="location.href='app.html'">시작하기</button>
+  </div>
+</nav>
+
+<!-- ── SLIDE NAV ── -->
+<div class="slide-nav" id="slideNav">
+  <button class="slide-dot active" data-target="s1" aria-label="1번 슬라이드"></button>
+  <button class="slide-dot" data-target="s2" aria-label="2번 슬라이드"></button>
+  <button class="slide-dot" data-target="s3" aria-label="3번 슬라이드"></button>
+  <button class="slide-dot" data-target="s4" aria-label="4번 슬라이드"></button>
+  <button class="slide-dot" data-target="s5" aria-label="5번 슬라이드"></button>
+  <button class="slide-dot" data-target="s6" aria-label="6번 슬라이드"></button>
+</div>
+
+<!-- ── SECTION 1: HERO ── -->
+<section id="s1">
+  <div class="hero-photo"></div>
+  <div class="hero-photo-overlay"></div>
+  <div class="grid-bg"></div>
+  <div class="section-inner" style="text-align:center;">
+    <div data-anim="up">
+      <div class="eyebrow"><div class="dot"></div>where listening leads to value</div>
+    </div>
+    <div class="hero-stage">
+      <div id="heroPhrase">
+        <div class="hero-num hero-anim" id="heroNum">
+          <span class="ha-word ha-left">연구자와</span><br/>
+          <span class="blue ha-word ha-right">응답자를</span><br/>
+          <span class="ha-word ha-up">이어주다</span>
+        </div>
+        <div class="hero-connection">
+          <span class="hcon-label">연구자</span>
+          <div class="hcon-line">
+            <div class="hcon-track"></div>
+            <div class="hcon-fill"></div>
+            <div class="hcon-dot"></div>
+            <div class="hcon-endcap hcon-endcap-l"></div>
+            <div class="hcon-endcap hcon-endcap-r"></div>
+          </div>
+          <span class="hcon-label blue">응답자</span>
+        </div>
+      </div>
+      <div id="heroWordmark">
+        <span class="hero-wordmark-big">Li<span class="wa">snu</span></span>
+      </div>
+    </div>
+    <p class="hero-sub" id="heroSub">
+      리스누는 듣고자 하는 연구자와<br/>신뢰할 수 있는 응답자를 연결합니다.
+    </p>
+    <div class="hero-btns" id="heroBtns">
+      <button class="btn-big primary" onclick="location.href='app.html'">설문 둘러보기</button>
+      <button class="btn-big ghost" onclick="goToSection('s2')">어떻게 사용하나요?</button>
+    </div>
+  </div>
+  <div class="scroll-hint" onclick="goToSection('s2')" style="cursor:pointer;">
+    <svg width="16" height="22" viewBox="0 0 16 22" fill="none">
+      <rect x="1" y="1" width="14" height="20" rx="7" stroke="white" stroke-width="1.5"/>
+      <rect x="6.5" y="5" width="3" height="5" rx="1.5" fill="white"/>
+    </svg>
+    아래로
+  </div>
+</section>
+
+<!-- ── SECTION 2: BROWSE ── -->
+<section id="s2">
+  <div class="section-inner">
+    <div class="split">
+      <div class="split-text">
+        <div class="section-num" data-anim="up">01 — 탐색</div>
+        <h2 class="section-title" data-anim="up" style="transition-delay:0.1s">
+          원하는 설문을<br/><span class="accent">쉽게 찾아보세요</span>
+        </h2>
+        <p class="section-desc" data-anim="up" style="transition-delay:0.22s">
+          분야별·신분별 필터로 관심 있는 연구를 빠르게 찾을 수 있어요.<br/><br/>
+          <strong>최신순, 마감임박순, 응답률순</strong>으로 정렬하고,<br/>
+          인증된 연구자의 설문은 특별 뱃지로 구분됩니다.
+        </p>
+      </div>
+      <div class="split-visual" data-anim="right" style="transition-delay:0.15s">
+        <div class="mockup-phone">
+          <div class="mockup-card">
+            <div class="mockup-card-tags">
+              <span class="mockup-tag">경영학</span>
+              <span class="mockup-tag">대학원생</span>
+              <span class="mockup-tag blue">✓ 인증</span>
+              <span class="mockup-tag green">✓ 참여완료</span>
+            </div>
+            <div class="mockup-card-title">MZ세대의 SNS 브랜드 인식과 구매 의도에 관한 연구</div>
+            <div class="mockup-bar-wrap"><div class="mockup-bar" style="width:75%"></div></div>
+            <div class="mockup-card-meta">🏫 서울대학교 · 📅 2026-04-15 · 👁 340</div>
+            <div class="mockup-btn-row">
+              <div class="mockup-btn ghost">참여 완료</div>
+            </div>
+          </div>
+          <div class="mockup-card" style="opacity:0.7;transform:scale(0.97);transform-origin:top center;">
+            <div class="mockup-card-tags">
+              <span class="mockup-tag">심리학</span>
+              <span class="mockup-tag">학부생</span>
+            </div>
+            <div class="mockup-card-title">대학생의 수면 습관과 학업 성취도 상관관계</div>
+            <div class="mockup-bar-wrap"><div class="mockup-bar" style="width:67%"></div></div>
+            <div class="mockup-card-meta">🏫 연세대학교 · 📅 2026-04-30</div>
+            <div class="mockup-btn-row">
+              <div class="mockup-btn">참여하기</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 3: GATE ── -->
+<section id="s3">
+  <div class="section-inner" style="text-align:center;">
+    <div class="section-num" data-anim="up" style="color:var(--blue-light)">02 — 참여 시스템</div>
+    <h2 class="section-title" data-anim="up" style="transition-delay:0.1s;color:white;">
+      설문 <span style="color:var(--blue-light)">3개</span>에 참여하면<br/>내 연구를 올릴 수 있어요
+    </h2>
+    <p class="section-desc" data-anim="up" style="transition-delay:0.22s;">
+      응답자를 먼저 경험해야 연구자가 될 수 있어요.<br/>
+      이 시스템이 Lisnu의 <strong style="color:white;">신뢰와 상호성</strong>을 만듭니다.
+    </p>
+
+    <div class="gate-visual" data-anim="up" style="transition-delay:0.3s;" id="gateVisual">
+      <div class="gate-step">
+        <div class="gate-circle done" id="gc1">1</div>
+        <div class="gate-label blue">참여 완료</div>
+      </div>
+      <div class="gate-connector" id="gcon1"></div>
+      <div class="gate-step">
+        <div class="gate-circle done" id="gc2">2</div>
+        <div class="gate-label blue">참여 완료</div>
+      </div>
+      <div class="gate-connector" id="gcon2"></div>
+      <div class="gate-step">
+        <div class="gate-circle empty" id="gc3">3</div>
+        <div class="gate-label" id="gl3">한 개 남았어요</div>
+      </div>
+      <div class="gate-connector" id="gcon3"></div>
+      <div class="gate-step">
+        <div class="gate-circle unlock" id="gcUnlock">✦</div>
+        <div class="gate-label blue">설문 올리기 해금!</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 4: UPLOAD ── -->
+<section id="s4">
+  <div class="section-inner">
+    <div class="split reverse">
+      <div class="split-text">
+        <div class="section-num" data-anim="up">03 — 설문 등록</div>
+        <h2 class="section-title" data-anim="up" style="transition-delay:0.1s">
+          내 연구를<br/><span class="accent">세상에 공유하세요</span>
+        </h2>
+        <p class="section-desc" data-anim="up" style="transition-delay:0.22s">
+          Google Forms, Naver Forms 등 어떤 링크든 등록할 수 있어요.<br/><br/>
+          설문 제목, 설명, 분야, 마감일을 입력하면<br/>
+          <strong>모든 사용자에게 즉시 공개</strong>됩니다.
+        </p>
+      </div>
+      <div class="split-visual" data-anim="left" style="transition-delay:0.15s">
+        <div class="mockup-form">
+          <div class="mockup-form-title">설문 올리기</div>
+          <div class="mockup-field">
+            <div class="mockup-field-label">설문 제목</div>
+            <div class="mockup-field-input focused">MZ세대의 브랜드 인식에 관한 연구 ✦</div>
+          </div>
+          <div class="mockup-field">
+            <div class="mockup-field-label">분야</div>
+            <div class="mockup-field-input">경영학</div>
+          </div>
+          <div class="mockup-field">
+            <div class="mockup-field-label">설문 링크</div>
+            <div class="mockup-field-input">https://forms.gle/...</div>
+          </div>
+          <div class="mockup-field" style="display:flex;gap:8px;">
+            <div style="flex:1">
+              <div class="mockup-field-label">목표 응답</div>
+              <div class="mockup-field-input">150명</div>
+            </div>
+            <div style="flex:1">
+              <div class="mockup-field-label">마감일</div>
+              <div class="mockup-field-input">2026-06-30</div>
+            </div>
+          </div>
+          <div class="mockup-submit">등록하기 →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 5: TRUST ── -->
+<section id="s5">
+  <div class="section-inner">
+    <div style="text-align:center;margin-bottom:0;">
+      <div class="section-num" data-anim="up" style="color:var(--blue-light)">04 — 신뢰 시스템</div>
+      <h2 class="section-title" data-anim="up" style="transition-delay:0.1s;color:white;">
+        믿을 수 있는 연구자와<br/><span style="color:var(--blue-light)">응답자만 모입니다</span>
+      </h2>
+    </div>
+    <div class="trust-cards">
+      <div class="trust-card" data-anim="up" style="transition-delay:0.1s;">
+        <div class="trust-icon">🎓</div>
+        <h3>대학 이메일 인증</h3>
+        <p>.ac.kr 또는 .edu 이메일로 가입하면 인증된 연구자 뱃지가 자동 부여됩니다.</p>
+      </div>
+      <div class="trust-card" data-anim="up" style="transition-delay:0.22s;">
+        <div class="trust-icon">🔄</div>
+        <h3>상호 참여 원칙</h3>
+        <p>먼저 응답자로 기여한 사람만 설문을 올릴 수 있어요. 모두가 기여하는 생태계입니다.</p>
+      </div>
+      <div class="trust-card" data-anim="up" style="transition-delay:0.34s;">
+        <div class="trust-icon">🚩</div>
+        <h3>신고 및 검토 시스템</h3>
+        <p>스팸, 가짜 링크, 허위 설문은 신고를 통해 빠르게 처리됩니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 6: CTA ── -->
+<section id="s6">
+  <div class="section-inner">
+    <div class="cta-title" data-anim="up">
+      지금 바로<br/>시작해보세요
+    </div>
+    <p class="cta-sub" data-anim="up" style="transition-delay:0.12s;">
+      연구자와 응답자가 서로를 필요로 하는 공간, Lisnu
+    </p>
+    <div data-anim="up" style="transition-delay:0.24s;">
+      <a href="app.html" class="btn-white">Lisnu 시작하기 →</a>
+    </div>
+  </div>
+  <div class="footer-inline">© 2026 Lisnu · where listening leads to value</div>
+</section>
+
+<script>
+  // JS 준비 완료 → 애니메이션 초기 상태 활성화
+  document.body.classList.add('ready');
+
+  // ── 히어로 시네마틱 시퀀스 ──
+  window.addEventListener('load', () => {
+    const heroNum     = document.getElementById('heroNum');
+    const heroPhrase  = document.getElementById('heroPhrase');
+    const heroWordmark = document.getElementById('heroWordmark');
+    const heroStage   = document.querySelector('.hero-stage');
+    const heroSub     = document.getElementById('heroSub');
+    const heroBtns    = document.getElementById('heroBtns');
+
+    // Phase 1: 캐치프레이즈 단어들 등장
+    setTimeout(() => heroNum && heroNum.classList.add('go'), 500);
+
+    // Phase 2: 캐치프레이즈 사라짐 + 높이 고정
+    setTimeout(() => {
+      heroPhrase && heroPhrase.classList.add('out');
+      if (heroStage) {
+        heroStage.style.height = heroStage.offsetHeight + 'px';
+        heroStage.style.overflow = 'hidden';
+      }
+    }, 3600);
+
+    // 스테이지 높이 워드마크 크기로 부드럽게 축소
+    setTimeout(() => {
+      if (heroStage) {
+        heroStage.style.transition = 'height 1.0s cubic-bezier(0.16,1,0.3,1)';
+        heroStage.style.height = '130px';
+      }
+    }, 3680);
+
+    // Phase 3: Lisnu 워드마크 등장
+    setTimeout(() => heroWordmark && heroWordmark.classList.add('in'), 4300);
+
+    // Phase 4: 서브카피 → 버튼 → 스크롤힌트
+    setTimeout(() => heroSub && heroSub.classList.add('in'), 5000);
+    setTimeout(() => heroBtns && heroBtns.classList.add('in'), 5220);
+    setTimeout(() => {
+      const hint = document.querySelector('.scroll-hint');
+      if (hint) hint.style.opacity = '1';
+    }, 6000);
+  });
+
+
+  // ── 게이트 애니메이션 ──
+  function animateGate() {
+    if (gateAnimated) return;
+    gateAnimated = true;
+    const gc3 = document.getElementById('gc3');
+    const gcon1 = document.getElementById('gcon1');
+    const gcon2 = document.getElementById('gcon2');
+    const gcon3 = document.getElementById('gcon3');
+    const gl3 = document.getElementById('gl3');
+    const gcUnlock = document.getElementById('gcUnlock');
+
+    // 1번 커넥터 켜기
+    setTimeout(() => { gcon1.classList.add('lit'); }, 200);
+    // 2번 커넥터 켜기
+    setTimeout(() => { gcon2.classList.add('lit'); }, 500);
+    // 1, 2번 circle 켜기
+    setTimeout(() => {
+      document.getElementById('gc1').classList.add('lit');
+      document.getElementById('gc2').classList.add('lit');
+    }, 300);
+    // 3번 circle 채워지기
+    setTimeout(() => {
+      gc3.classList.remove('empty');
+      gc3.classList.add('done', 'lit');
+      gl3.textContent = '참여 완료!';
+      gl3.style.color = 'var(--blue-light)';
+      gcon3.classList.add('lit');
+    }, 900);
+    // 자물쇠 해제
+    setTimeout(() => {
+      gcUnlock.style.transform = 'scale(1.15)';
+      gcUnlock.style.boxShadow = '0 0 60px rgba(37,99,235,0.8)';
+    }, 1400);
+    setTimeout(() => {
+      gcUnlock.style.transform = 'scale(1)';
+    }, 1800);
+  }
+
+
+  // ── 풀페이지 슬라이드 내비게이션 ──
+  const SECTIONS = ['s1', 's2', 's3', 's4', 's5', 's6'];
+  const DARK_SECTIONS = new Set(['s2', 's4']); // 밝은 배경 섹션 → 도트 어둡게
+
+  window.goToSection = function(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  function updateDots(activeId) {
+    const isDark = DARK_SECTIONS.has(activeId);
+    document.querySelectorAll('.slide-dot').forEach(d => {
+      d.classList.toggle('active', d.dataset.target === activeId);
+      d.classList.toggle('dark', isDark);
+    });
+    // 네비게이션 바 배경 처리
+    const nav = document.getElementById('nav');
+    if (nav) nav.classList.toggle('scrolled', activeId !== 's1');
+  }
+
+  // 섹션별 IntersectionObserver
+  let gateAnimated = false;
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && e.intersectionRatio >= 0.5) {
+        const id = e.target.id;
+        updateDots(id);
+        // 이 섹션의 data-anim 요소들 활성화
+        e.target.querySelectorAll('[data-anim]').forEach((el, i) => {
+          setTimeout(() => el.classList.add('visible'), i * 80 + 100);
+        });
+        // gate 애니메이션 트리거
+        if (id === 's3' && !gateAnimated) animateGate();
+      }
+    });
+  }, { threshold: 0.5 });
+
+  SECTIONS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) sectionObserver.observe(el);
+  });
+
+  // 도트 클릭
+  document.querySelectorAll('.slide-dot').forEach(d => {
+    d.addEventListener('click', () => goToSection(d.dataset.target));
+  });
+
+  // 키보드 방향키 내비게이션
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    const activeDot = document.querySelector('.slide-dot.active');
+    const currentId = activeDot ? activeDot.dataset.target : 's1';
+    const idx = SECTIONS.indexOf(currentId);
+    if (e.key === 'ArrowDown' && idx < SECTIONS.length - 1) goToSection(SECTIONS[idx + 1]);
+    if (e.key === 'ArrowUp' && idx > 0) goToSection(SECTIONS[idx - 1]);
+  });
+
+  // 초기 s1 활성화
+  updateDots('s1');
+</script>
+</body>
+</html>

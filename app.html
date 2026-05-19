@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lisnu — 설문 탐색</title>
+  <meta name="description" content="리스누는 듣고자 하는 연구자와 신뢰할 수 있는 응답자를 연결합니다." />
+  <meta property="og:title" content="Lisnu — where listening leads to value" />
+  <meta property="og:description" content="리스누는 듣고자 하는 연구자와 신뢰할 수 있는 응답자를 연결합니다." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232563eb'/><text x='16' y='23' text-anchor='middle' fill='white' font-family='system-ui,sans-serif' font-weight='900' font-size='14' letter-spacing='-0.5'>Li</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f8fafc; --surface: #ffffff; --border: rgba(0,0,0,0.08);
+      --text: #0f172a; --muted: #64748b; --subtle: #94a3b8;
+      --accent: #2563eb; --accent-light: rgba(37,99,235,0.08); --accent-mid: #2563eb; --accent-hover: #1d4ed8;
+      --nav-bg: #ffffff; --nav-border: rgba(0,0,0,0.07);
+      --green: #16a34a; --green-light: rgba(22,163,74,0.09);
+      --red: #dc2626; --red-light: rgba(220,38,38,0.09);
+      --amber: #d97706; --amber-light: rgba(217,119,6,0.1);
+      --tag-bg: #f1f5f9;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+      --shadow: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+      --radius: 12px;
+    }
+
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.6; }
+
+    /* ── NAV ── */
+    nav { position: sticky; top: 0; z-index: 100; background: var(--nav-bg); border-bottom: 1px solid var(--nav-border); padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; text-decoration: none; }
+    .nav-logo-text { font-size: 1.15rem; font-weight: 800; color: #ffffff; letter-spacing: -0.03em; }
+    .wordmark {
+      font-family: 'Space Grotesk', 'DM Sans', sans-serif;
+      font-size: 1.22rem; font-weight: 800; letter-spacing: -0.055em; color: #0f172a;
+    }
+    .wordmark .wa { color: #2563eb; }
+    .nav-divider { width: 1px; height: 18px; background: rgba(0,0,0,0.12); flex-shrink: 0; }
+    .nav-univ-logo { height: 16px; width: auto; filter: none; opacity: 0.75; }
+    .nav-center { flex: 1; display: flex; justify-content: center; }
+    .nav-progress { display: flex; align-items: center; gap: 8px; background: #f1f5f9; border: 1px solid rgba(0,0,0,0.08); border-radius: 20px; padding: 5px 14px; font-size: 13px; color: #64748b; cursor: pointer; transition: background 0.15s; }
+    .nav-progress:hover { background: #e2e8f0; }
+    .nav-progress .dots { display: flex; gap: 4px; }
+    .nav-progress .dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; }
+    .nav-progress .dot.filled { background: #2563eb; }
+    .nav-progress.done .dot.filled { background: #16a34a; }
+    .nav-sim-btn { display:flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:none; background:rgba(37,99,235,0.08); color:var(--accent); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; text-decoration:none; }
+    .nav-sim-btn:hover { background:rgba(37,99,235,0.15); }
+    .nav-right { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .profile-chip { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: #334155; cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: background 0.15s; }
+    .profile-chip:hover { background: #f1f5f9; }
+    .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-light); color: var(--accent-mid); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+
+    /* ── BUTTONS ── */
+    .btn { padding: 8px 18px; border-radius: 8px; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.18s; }
+    .btn-ghost { background: transparent; color: #475569; border: 1px solid rgba(0,0,0,0.15); }
+    .btn-ghost:hover { background: #f1f5f9; color: #0f172a; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-mid); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 7px; }
+    .btn-block { width: 100%; }
+    .modal .btn-ghost, .card .btn-ghost { color: var(--text); border-color: var(--border); background: transparent; }
+    .modal .btn-ghost:hover { background: var(--bg); color: var(--text); }
+
+    /* ── PAGE HEADER (히어로 대체) ── */
+    .page-header {
+      max-width: 940px; margin: 0 auto; padding: 28px 24px 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .page-header-left {}
+    .page-header-title {
+      font-size: 1.45rem; font-weight: 800; color: var(--text);
+      letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 4px;
+    }
+    .page-header-sub { font-size: 13px; color: var(--muted); }
+    .page-header-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    /* ── FILTERS & SORT ── */
+    .demo-banner { max-width: 940px; margin: 0 auto 16px; padding: 0 24px; }
+    .demo-banner { display: flex; align-items: center; gap: 10px; background: var(--amber-light); border: 1px solid rgba(245,158,11,0.3); border-radius: var(--radius); padding: 10px 14px; font-size: 13px; color: #fbbf24; }
+    .demo-banner svg { flex-shrink: 0; color: var(--amber); }
+    .demo-banner span { flex: 1; }
+    .demo-banner button { background: none; border: none; color: #fbbf24; cursor: pointer; font-size: 14px; opacity: 0.6; padding: 2px 4px; flex-shrink: 0; }
+    .demo-banner button:hover { opacity: 1; }
+    .toolbar { max-width: 940px; margin: 0 auto 20px; padding: 0 24px; display: flex; flex-direction: column; gap: 10px; }
+
+    /* ── FILTER BAR V2 ── */
+    .filter-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .filter-quick { display: flex; gap: 6px; flex-shrink: 0; }
+    .fq-btn { padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; color: var(--text); white-space: nowrap; }
+    .fq-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .fq-btn.fq-match { background: rgba(34,197,94,0.1); color: var(--green); border-color: rgba(34,197,94,0.25); }
+    .fq-btn.fq-match.active { background: var(--green); color: #fff; border-color: var(--green); }
+    .filter-dropdowns { display: flex; gap: 6px; flex-shrink: 0; }
+    .fdrop { position: relative; }
+    .fdrop-btn { display: flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text); transition: all 0.15s; white-space: nowrap; }
+    .fdrop-btn:hover { border-color: rgba(255,255,255,0.25); }
+    .fdrop.open .fdrop-btn { border-color: var(--accent); color: var(--accent-mid); }
+    .fdrop.has-value .fdrop-btn { border-color: var(--accent); background: var(--accent-light); color: var(--accent-mid); }
+    .fdrop-count { background: var(--accent); color: #fff; border-radius: 10px; font-size: 11px; font-weight: 700; padding: 1px 6px; line-height: 1.4; }
+    .fdrop-panel {
+      visibility: hidden; opacity: 0; transform: translateY(-6px) scale(0.97);
+      pointer-events: none; transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0.15s;
+      position: absolute; top: calc(100% + 6px); left: 0;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 6px; min-width: 170px; z-index: 200; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    }
+    .fdrop-panel-wide { min-width: 200px; max-height: 340px; overflow-y: auto; }
+    .fdrop.open .fdrop-panel {
+      visibility: visible; opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
+      transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0s;
+    }
+    .fdrop-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text); transition: background 0.1s; user-select: none; }
+    .fdrop-item:hover { background: rgba(255,255,255,0.07); }
+    .fdrop-item input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+    .fdrop-sep { height: 1px; background: var(--border); margin: 4px 6px; }
+    .fdrop-clear { width: 100%; margin-top: 4px; padding: 6px; background: none; border: 1px solid var(--border); border-radius: 8px; font-size: 12px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .fdrop-clear:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    .filter-search { flex: 1; min-width: 140px; max-width: 240px; position: relative; }
+    .filter-search input { width: 100%; padding: 7px 32px 7px 14px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); font-size: 13px; color: var(--text); outline: none; transition: border 0.15s; }
+    .filter-search input:focus { border-color: var(--accent); }
+    .filter-search input::placeholder { color: var(--subtle); }
+    .search-clear { display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--subtle); cursor: pointer; font-size: 14px; line-height: 1; padding: 2px 4px; border-radius: 4px; transition: color 0.15s; }
+    .search-clear:hover { color: var(--text); }
+    .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .fchip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px 4px 12px; background: var(--accent-light); border: 1px solid rgba(37,99,235,0.25); border-radius: 20px; font-size: 12px; font-weight: 500; color: var(--accent-mid); }
+    .fchip-remove { background: none; border: none; cursor: pointer; color: var(--accent-mid); font-size: 14px; line-height: 1; opacity: 0.6; padding: 0 2px; }
+    .fchip-remove:hover { opacity: 1; }
+
+    /* legacy (keep for match filter btn compat) */
+    .filter-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; color: var(--text); white-space: nowrap; }
+    .filter-btn.active, .filter-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .filter-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 2px; align-self: center; }
+    .sub-filters { display: none; }
+    .search-wrap { margin-left: auto; position: relative; }
+    .search-wrap input { padding: 7px 14px 7px 34px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); font-family: 'DM Sans', sans-serif; font-size: 13px; width: 200px; outline: none; transition: border 0.15s; color: var(--text); }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap::before { content: '🔍'; position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 12px; pointer-events: none; }
+    .sort-bar { display: flex; align-items: center; gap: 8px; }
+    .sort-label { font-size: 12px; color: var(--subtle); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .sort-btn { padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 500; cursor: pointer; color: var(--muted); transition: all 0.15s; }
+    .sort-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── GRID & CARDS ── */
+    .grid { max-width: 940px; margin: 0 auto; padding: 0 24px 80px; display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px 16px; box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s; animation: fadeUp 0.4s ease both; position: relative; display: flex; flex-direction: column; }
+    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: rgba(37,99,235,0.3); }
+    .card.expired { opacity: 0.55; }
+    .card.expired:hover { transform: none; box-shadow: var(--shadow-sm); }
+    /* 참여완료 카드 */
+    .card.done-card { border-color: rgba(34,197,94,0.2); }
+    .card.done-card:hover { border-color: rgba(34,197,94,0.45); }
+    .card.done-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--green); border-radius: var(--radius) var(--radius) 0 0; }
+    /* 카드 상단: 소속 + 마감 */
+    .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 8px; }
+    .card-univ { font-size: 11px; color: var(--subtle); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-deadline { font-size: 11px; color: var(--subtle); white-space: nowrap; flex-shrink: 0; }
+    .card-deadline.soon { color: var(--amber); font-weight: 600; }
+    .card-badges { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+    .tag { padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--tag-bg); color: var(--muted); }
+    .tag.verified { background: var(--accent-light); color: var(--accent-mid); }
+    .tag.expired-tag { background: var(--tag-bg); color: var(--subtle); }
+    .tag.participated { background: var(--green-light); color: var(--green); }
+    .tag.match-tag { background: var(--green-light); color: var(--green); }
+    .tag.no-match-tag { background: var(--red-light); color: #fca5a5; }
+    .filter-btn.match-filter { background: var(--green-light); color: var(--green); border-color: #86efac; }
+    .filter-btn.match-filter.active, .filter-btn.match-filter:hover { background: var(--green); color: #fff; border-color: var(--green); }
+    .no-match-reason { font-size: 11px; color: #fca5a5; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; opacity: 0.85; }
+    .target-info { font-size: 11px; color: var(--subtle); margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
+    .target-info svg { flex-shrink: 0; }
+    .card h3 { font-size: 0.97rem; line-height: 1.5; margin-bottom: 12px; font-weight: 600; color: var(--text); flex: 1; }
+    .card p { display: none; }
+    .progress-row { margin-bottom: 12px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--subtle); margin-bottom: 4px; }
+    .progress-track { height: 3px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 3px; background: var(--accent); border-radius: 4px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); }
+    .progress-fill.full { background: var(--green); }
+    .card-footer { margin-top: auto; padding-top: 12px; display: flex; gap: 8px; border-top: 1px solid var(--border); }
+    .empty { text-align: center; padding: 72px 24px; color: var(--muted); grid-column: 1/-1; }
+    .empty .icon { font-size: 2.8rem; margin-bottom: 14px; }
+    .empty p { font-size: 15px; margin-bottom: 16px; }
+    .empty .btn-reset { padding: 8px 20px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+    .empty .btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+    .loading-grid { text-align: center; padding: 60px 24px; color: var(--muted); grid-column: 1/-1; }
+    .spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+
+    /* ── MODALS ── */
+    .overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(15,23,42,0.35); backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 20px; }
+    .overlay.open { display: flex; }
+    .modal { background: var(--surface); border-radius: 16px; padding: 32px; max-width: 500px; width: 100%; box-shadow: 0 24px 64px rgba(0,0,0,0.15); animation: popIn 0.22s ease both; max-height: 90vh; overflow-y: auto; }
+    .modal.wide { max-width: 640px; }
+    .modal h2 { font-size: 1.3rem; margin-bottom: 4px; font-weight: 700; color: var(--text); }
+    .modal .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: var(--text); }
+    .form-group { margin-bottom: 16px; }
+    input[type=text], input[type=email], input[type=url], input[type=number], input[type=password], textarea, select { width: 100%; padding: 10px 13px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; color: var(--text); transition: border 0.15s; }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.2); }
+    textarea { resize: vertical; min-height: 80px; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+    .hint { font-size: 12px; color: var(--subtle); margin-top: 4px; }
+    .error-msg { font-size: 12px; color: var(--red); margin-top: 4px; display: none; }
+    .error-msg.show { display: block; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 6px; }
+    .modal-actions .btn { flex: 1; }
+    .step { display: none; }
+    .step.active { display: block; }
+    .step-indicator { display: flex; gap: 6px; margin-bottom: 20px; }
+    .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.2s; }
+    .step-dot.done { background: var(--accent); }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+    /* ── PROFILE MODAL ── */
+    .profile-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+    .profile-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--accent-light); color: var(--accent-mid); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; flex-shrink: 0; }
+    .profile-info h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 2px; }
+    .profile-info p { font-size: 13px; color: var(--muted); }
+    .profile-stats { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+    .profile-stat { flex: 1; text-align: center; padding: 14px; border-right: 1px solid var(--border); }
+    .profile-stat:last-child { border-right: none; }
+    .profile-stat-num { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+    .profile-stat-label { font-size: 11px; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.04em; }
+    .profile-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--subtle); margin-bottom: 10px; }
+    .profile-survey-list { display: flex; flex-direction: column; gap: 8px; }
+    .profile-survey-item { padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+    .profile-survey-item h4 { font-weight: 600; margin-bottom: 3px; font-size: 13px; }
+    .profile-survey-item p { color: var(--muted); font-size: 12px; }
+    .profile-survey-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .upload-gate { background: var(--accent-light); border: 1px solid rgba(37,99,235,0.25); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; }
+    .upload-gate p { font-size: 13px; color: var(--accent-mid); font-weight: 500; margin-bottom: 8px; }
+    .gate-dots { display: flex; gap: 6px; }
+    .gate-dot { width: 32px; height: 6px; border-radius: 3px; background: rgba(37,99,235,0.25); }
+    .gate-dot.filled { background: var(--accent); }
+
+    /* ── DETAIL MODAL ── */
+    .detail-stats { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 18px; }
+    .stat { flex: 1; text-align: center; padding: 14px; border-right: 1px solid var(--border); }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 11px; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.04em; }
+    .survey-link-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; margin-bottom: 16px; word-break: break-all; font-size: 13px; }
+    .survey-link-box a { color: var(--accent); text-decoration: none; flex: 1; }
+    .survey-link-box a:hover { text-decoration: underline; }
+
+    /* ── BUTTON LOADING ── */
+    .btn.loading { position: relative; color: transparent !important; pointer-events: none; }
+    .btn.loading::after {
+      content: ''; position: absolute; inset: 0; margin: auto;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .btn-ghost.loading::after { border-color: rgba(255,255,255,0.2); border-top-color: rgba(255,255,255,0.7); }
+
+    /* ── INPUT ERROR STATE ── */
+    input.input-error, textarea.input-error, select.input-error {
+      border-color: var(--red) !important;
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important;
+    }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1e293b; color: #fff; padding: 10px 22px; border-radius: 30px; font-size: 14px; font-weight: 500; z-index: 999; opacity: 0; transition: all 0.25s; pointer-events: none; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── MOBILE ── */
+    @media (max-width: 640px) {
+      nav { padding: 0 16px; }
+      .nav-center { display: none; }
+      .nav-logo-text { font-size: 1rem; }
+      .hero { padding: 48px 20px 40px; }
+      .hero-brand-name { font-size: 2.6rem; }
+      .toolbar { padding: 0 16px; }
+      .filters { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+      .filters::-webkit-scrollbar { display: none; }
+      .search-wrap { display: none; }
+      .grid { grid-template-columns: 1fr; padding: 0 16px 60px; }
+      .modal { padding: 24px 20px; border-radius: 14px; }
+      .form-row { flex-direction: column; }
+      .profile-stats { flex-direction: column; }
+      .profile-stat { border-right: none; border-bottom: 1px solid var(--border); }
+      .profile-stat:last-child { border-bottom: none; }
+      .detail-stats { flex-wrap: wrap; }
+      .stat { min-width: 50%; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <span class="wordmark">Li<span class="wa">snu</span></span>
+    <div class="nav-divider"></div>
+    <img src="./Seoul_national_university_logotype-1.svg" class="nav-univ-logo" alt="서울대학교" />
+  </a>
+  <div class="nav-center" id="navProgress"></div>
+  <div class="nav-right" id="navRight">
+    <a href="simulator.html" class="nav-sim-btn">🤖 AI 시뮬레이션</a>
+    <button class="btn btn-ghost" style="font-size:13px;padding:6px 14px;" onclick="openModal('loginModal')">로그인</button>
+    <button class="btn btn-primary" style="font-size:13px;padding:6px 14px;" onclick="openModal('signupModal')">회원가입</button>
+  </div>
+</nav>
+
+<!-- ── PAGE HEADER ── -->
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-header-title">설문 탐색</div>
+    <div class="page-header-sub">리스누에 등록된 연구 설문을 찾아보세요</div>
+  </div>
+  <div class="page-header-actions">
+    <button class="btn btn-primary" onclick="requireLogin('upload')">＋ 설문 올리기</button>
+  </div>
+</div>
+
+<!-- ── TOOLBAR ── -->
+<div class="toolbar" id="toolbarSection">
+  <div class="filter-bar">
+    <!-- 빠른 필터 -->
+    <div class="filter-quick">
+      <button class="fq-btn active" id="allFilterBtn" onclick="setFilter('all',this)">전체</button>
+      <button class="fq-btn fq-match" id="matchFilterBtn" onclick="setFilter('match',this)">✨ 맞춤</button>
+    </div>
+
+    <!-- 드롭다운 필터 -->
+    <div class="filter-dropdowns">
+      <!-- 신분 드롭다운 -->
+      <div class="fdrop" id="fdropRole">
+        <button class="fdrop-btn" onclick="toggleFdrop('fdropRole')">
+          신분
+          <span class="fdrop-count" id="roleCount" style="display:none"></span>
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="fdrop-panel">
+          <label class="fdrop-item"><input type="checkbox" value="학부생" onchange="onRoleCheck(this)"> 학부생</label>
+          <label class="fdrop-item"><input type="checkbox" value="대학원생" onchange="onRoleCheck(this)"> 대학원생</label>
+          <label class="fdrop-item"><input type="checkbox" value="교수" onchange="onRoleCheck(this)"> 교수</label>
+          <div class="fdrop-sep"></div>
+          <button class="fdrop-clear" onclick="clearRoles()">선택 초기화</button>
+        </div>
+      </div>
+
+      <!-- 단과대학 드롭다운 -->
+      <div class="fdrop" id="fdropCollege">
+        <button class="fdrop-btn" onclick="toggleFdrop('fdropCollege')">
+          단과대학
+          <span class="fdrop-count" id="collegeCount" style="display:none"></span>
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="fdrop-panel fdrop-panel-wide">
+          <label class="fdrop-item"><input type="checkbox" value="인문대학" onchange="onCollegeCheck(this)"> 인문대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="사회과학대학" onchange="onCollegeCheck(this)"> 사회과학대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="자연과학대학" onchange="onCollegeCheck(this)"> 자연과학대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="경영대학" onchange="onCollegeCheck(this)"> 경영대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="공과대학" onchange="onCollegeCheck(this)"> 공과대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="농업생명과학대학" onchange="onCollegeCheck(this)"> 농업생명과학대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="미술대학" onchange="onCollegeCheck(this)"> 미술대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="사범대학" onchange="onCollegeCheck(this)"> 사범대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="생활과학대학" onchange="onCollegeCheck(this)"> 생활과학대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="수의과대학" onchange="onCollegeCheck(this)"> 수의과대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="약학대학" onchange="onCollegeCheck(this)"> 약학대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="음악대학" onchange="onCollegeCheck(this)"> 음악대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="의과대학" onchange="onCollegeCheck(this)"> 의과대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="간호대학" onchange="onCollegeCheck(this)"> 간호대학</label>
+          <label class="fdrop-item"><input type="checkbox" value="자유전공학부" onchange="onCollegeCheck(this)"> 자유전공학부</label>
+          <div class="fdrop-sep"></div>
+          <button class="fdrop-clear" onclick="clearColleges()">선택 초기화</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 검색 -->
+    <div class="filter-search">
+      <input type="text" id="searchInput" placeholder="설문 검색..." oninput="onSearchInput()" />
+      <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="검색 지우기">✕</button>
+    </div>
+  </div>
+
+  <!-- 활성 필터 칩 -->
+  <div class="filter-chips" id="filterChips" style="display:none"></div>
+
+  <!-- 정렬 -->
+  <div class="sort-bar">
+    <span class="sort-label">정렬</span>
+    <button class="sort-btn active" id="sort-newest" onclick="setSort('newest',this)">최신순</button>
+    <button class="sort-btn" id="sort-deadline" onclick="setSort('deadline',this)">마감임박순</button>
+    <button class="sort-btn" id="sort-rate" onclick="setSort('rate',this)">응답률순</button>
+  </div>
+</div>
+
+<!-- ── DEMO BANNER ── -->
+<div class="demo-banner" id="demoBanner">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <span>일부 설문은 플랫폼 소개를 위한 <strong>샘플 설문</strong>입니다. 실제 응답은 등록된 설문에만 반영됩니다.</span>
+  <button onclick="document.getElementById('demoBanner').style.display='none'" aria-label="닫기">✕</button>
+</div>
+
+<!-- ── CARD GRID ── -->
+<div class="grid" id="cardGrid">
+  <div class="loading-grid"><div class="spinner"></div><p>설문을 불러오는 중...</p></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ── SIGNUP MODAL ── -->
+<div class="overlay" id="signupModal">
+  <div class="modal">
+    <h2>회원가입</h2>
+    <p class="subtitle">대학 이메일(.ac.kr / .edu)로 가입하면 인증된 연구자 뱃지가 부여됩니다.</p>
+    <div class="step-indicator">
+      <div class="step-dot done" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+    </div>
+    <!-- Step 1: 정보 입력 -->
+    <div class="step active" id="step1">
+      <div class="form-group">
+        <label>이름</label>
+        <input type="text" id="su-name" placeholder="홍길동" />
+        <div class="error-msg" id="err-name">이름을 입력해 주세요.</div>
+      </div>
+      <div class="form-group">
+        <label>이메일</label>
+        <input type="email" id="su-email" placeholder="example@university.ac.kr" />
+        <div class="hint">대학 이메일(.ac.kr / .edu)이면 인증 뱃지가 자동 부여됩니다.</div>
+        <div class="error-msg" id="err-email">올바른 이메일을 입력해 주세요.</div>
+      </div>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <input type="password" id="su-pw" placeholder="6자 이상" />
+        <div class="error-msg" id="err-pw">비밀번호는 6자 이상이어야 합니다.</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>소속 대학교</label>
+          <input type="text" id="su-univ" placeholder="서울대학교" />
+        </div>
+        <div class="form-group">
+          <label>신분</label>
+          <select id="su-role">
+            <option value="">선택</option>
+            <option value="학부생">학부생</option>
+            <option value="대학원생">대학원생 (석사)</option>
+            <option value="대학원생">대학원생 (박사)</option>
+            <option value="교수">교수 / 연구원</option>
+            <option value="기타">기타</option>
+          </select>
+          <div class="error-msg" id="err-role">신분을 선택해 주세요.</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>성별</label>
+          <select id="su-gender">
+            <option value="">선택</option>
+            <option value="male">남성</option>
+            <option value="female">여성</option>
+            <option value="other">기타 / 선택 안 함</option>
+          </select>
+          <div class="error-msg" id="err-gender">성별을 선택해 주세요.</div>
+        </div>
+        <div class="form-group">
+          <label>출생연도</label>
+          <input type="number" id="su-birthyear" placeholder="예) 1998" min="1940" max="2010" />
+          <div class="error-msg" id="err-birthyear">출생연도를 입력해 주세요 (1940–2010).</div>
+        </div>
+      </div>
+      <div class="hint" style="margin-bottom:12px;">성별·출생연도는 맞춤 설문 추천에만 사용되며 외부에 공개되지 않습니다.</div>
+      <div class="form-group" style="display:flex;align-items:flex-start;gap:10px;">
+        <input type="checkbox" id="su-agree" style="width:auto;margin-top:3px;flex-shrink:0;" />
+        <label for="su-agree" style="font-size:13px;font-weight:400;color:var(--muted);cursor:pointer;">
+          <a href="#" onclick="openModal('privacyModal')" style="color:var(--accent);font-weight:600;">개인정보처리방침</a>에 동의합니다.
+        </label>
+      </div>
+      <div class="error-msg" id="err-agree">개인정보처리방침에 동의해 주세요.</div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('signupModal')">취소</button>
+        <button class="btn btn-primary" onclick="goStep2()">다음 →</button>
+      </div>
+    </div>
+    <!-- Step 2: 인증 이메일 전송 -->
+    <div class="step" id="step2">
+      <div style="text-align:center;padding:16px 0 24px;">
+        <div style="font-size:2.5rem;margin-bottom:14px;">📬</div>
+        <p style="font-size:14px;line-height:1.7;margin-bottom:8px;">
+          <strong id="step2-email"></strong>으로<br/>인증 이메일을 전송했습니다.
+        </p>
+        <p style="font-size:13px;color:var(--muted);">메일함을 확인하고 링크를 클릭한 뒤, 아래 버튼을 눌러 주세요.</p>
+        <div class="error-msg" id="err-verify" style="margin-top:10px;text-align:center;">아직 이메일 인증이 완료되지 않았습니다.</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="resendVerification()">재전송</button>
+        <button class="btn btn-primary" id="verifyCheckBtn" onclick="checkVerification()">인증 완료 →</button>
+      </div>
+    </div>
+    <!-- Step 3: 완료 -->
+    <div class="step" id="step3">
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-size:3rem;margin-bottom:14px;">🎓</div>
+        <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:8px;">가입 완료!</h3>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">Lisnu에 오신 것을 환영합니다.<br/>설문 3개를 응답하면 설문을 올릴 수 있습니다.</p>
+        <button class="btn btn-primary btn-block" onclick="closeModal('signupModal');setStep(1);">시작하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOGIN MODAL ── -->
+<div class="overlay" id="loginModal">
+  <div class="modal">
+    <h2>로그인</h2>
+    <p class="subtitle">Lisnu 계정으로 로그인하세요.</p>
+    <div class="form-group">
+      <label>이메일</label>
+      <input type="email" id="li-email" placeholder="example@university.ac.kr" />
+    </div>
+    <div class="form-group">
+      <label>비밀번호</label>
+      <input type="password" id="li-pw" placeholder="••••••••" />
+      <div class="error-msg" id="err-login">이메일 또는 비밀번호가 올바르지 않습니다.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('loginModal')">취소</button>
+      <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">로그인</button>
+    </div>
+    <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:14px;">
+      <a href="#" style="color:var(--muted);" onclick="switchModal('loginModal','resetModal')">비밀번호를 잊으셨나요?</a>
+    </p>
+    <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:8px;">
+      계정이 없으신가요? <a href="#" style="color:var(--accent);font-weight:600;" onclick="switchModal('loginModal','signupModal')">회원가입</a>
+    </p>
+  </div>
+</div>
+
+<!-- ── PRIVACY POLICY MODAL ── -->
+<div class="overlay" id="privacyModal">
+  <div class="modal wide" style="max-height:80vh;">
+    <h2>개인정보처리방침</h2>
+    <p class="subtitle">최종 업데이트: 2026년 3월 20일</p>
+    <div style="font-size:13px;color:var(--muted);line-height:1.8;overflow-y:auto;max-height:50vh;padding-right:4px;">
+      <p><strong style="color:var(--text);">1. 수집하는 정보</strong><br/>
+      회원가입 시 이름, 이메일, 소속 대학교, 신분을 수집합니다. 설문 등록 시 제목, 설명, 링크 등 설문 관련 정보를 수집합니다.</p>
+      <br/>
+      <p><strong style="color:var(--text);">2. 정보 이용 목적</strong><br/>
+      수집된 정보는 서비스 제공, 인증된 연구자 뱃지 부여, 설문 공유 기능 운영에 사용됩니다. 제3자에게 판매하거나 제공하지 않습니다.</p>
+      <br/>
+      <p><strong style="color:var(--text);">3. 정보 보관 기간</strong><br/>
+      회원 탈퇴 시 개인정보는 즉시 삭제됩니다. 단, 법령에 따라 보관이 필요한 경우 해당 기간 동안 보관됩니다.</p>
+      <br/>
+      <p><strong style="color:var(--text);">4. Firebase 사용</strong><br/>
+      본 서비스는 Google Firebase를 통해 인증 및 데이터를 관리합니다. Google의 개인정보처리방침이 추가로 적용됩니다.</p>
+      <br/>
+      <p><strong style="color:var(--text);">5. 문의</strong><br/>
+      개인정보 관련 문의는 서비스 내 신고 기능을 통해 접수할 수 있습니다.</p>
+    </div>
+    <div style="margin-top:20px;">
+      <button class="btn btn-primary btn-block" onclick="closeModal('privacyModal')">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RESET PASSWORD MODAL ── -->
+<div class="overlay" id="resetModal">
+  <div class="modal" style="max-width:420px;">
+    <h2>비밀번호 재설정</h2>
+    <p class="subtitle">가입한 이메일 주소를 입력하면 재설정 링크를 보내드립니다.</p>
+    <div id="resetForm">
+      <div class="form-group">
+        <label>이메일</label>
+        <input type="email" id="reset-email" placeholder="example@university.ac.kr" />
+        <div class="error-msg" id="err-reset">등록되지 않은 이메일이거나 올바르지 않습니다.</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="switchModal('resetModal','loginModal')">← 로그인으로</button>
+        <button class="btn btn-primary" id="resetBtn" onclick="doReset()">링크 전송</button>
+      </div>
+    </div>
+    <div id="resetDone" style="display:none;text-align:center;padding:16px 0;">
+      <div style="font-size:2.5rem;margin-bottom:14px;">📩</div>
+      <p style="font-size:15px;font-weight:600;margin-bottom:8px;">이메일을 전송했습니다</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:24px;" id="resetDoneEmail"></p>
+      <button class="btn btn-primary btn-block" onclick="closeModal('resetModal');document.getElementById('resetForm').style.display='';document.getElementById('resetDone').style.display='none';">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── UPLOAD / EDIT MODAL ── -->
+<div class="overlay" id="uploadModal">
+  <div class="modal">
+    <h2 id="uploadModalTitle">설문 올리기</h2>
+    <p class="subtitle">등록하면 모든 사용자에게 실시간으로 공유됩니다.</p>
+    <div class="form-group">
+      <label>설문 제목</label>
+      <input type="text" id="up-title" placeholder="예) MZ세대의 브랜드 인식에 관한 연구" />
+      <div class="error-msg" id="err-up-title">제목을 입력해 주세요.</div>
+    </div>
+    <div class="form-group">
+      <label>설문 설명</label>
+      <textarea id="up-desc" placeholder="연구 목적, 대상, 소요 시간 등을 간략히 적어 주세요."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>단과대학</label>
+        <select id="up-field" onchange="onFieldChange()">
+          <option value="인문대학">인문대학</option>
+          <option value="사회과학대학">사회과학대학</option>
+          <option value="자연과학대학">자연과학대학</option>
+          <option value="경영대학">경영대학</option>
+          <option value="공과대학">공과대학</option>
+          <option value="농업생명과학대학">농업생명과학대학</option>
+          <option value="미술대학">미술대학</option>
+          <option value="사범대학">사범대학</option>
+          <option value="생활과학대학">생활과학대학</option>
+          <option value="수의과대학">수의과대학</option>
+          <option value="약학대학">약학대학</option>
+          <option value="음악대학">음악대학</option>
+          <option value="의과대학">의과대학</option>
+          <option value="간호대학">간호대학</option>
+          <option value="자유전공학부">자유전공학부</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>학과</label>
+        <select id="up-dept">
+          <option value="">학과 선택</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>목표 응답 수</label>
+      <input type="text" id="up-target" placeholder="예) 100" />
+    </div>
+    <div class="form-group">
+      <label>설문 링크 (Google Forms 등)</label>
+      <input type="url" id="up-url" placeholder="https://forms.gle/..." />
+      <div class="error-msg" id="err-up-url">유효한 URL을 입력해 주세요.</div>
+    </div>
+    <div class="form-group">
+      <label>마감일</label>
+      <input type="text" id="up-deadline" placeholder="예) 2026-06-30" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('uploadModal');editingId=null;">취소</button>
+      <button class="btn btn-primary" id="uploadBtn" onclick="submitSurvey()">등록하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DETAIL MODAL ── -->
+<div class="overlay" id="detailModal">
+  <div class="modal wide" id="detailContent"></div>
+</div>
+
+<!-- ── PROFILE MODAL ── -->
+<div class="overlay" id="profileModal">
+  <div class="modal wide" id="profileContent"></div>
+</div>
+
+<!-- ── REPORT MODAL ── -->
+<div class="overlay" id="reportModal">
+  <div class="modal" style="max-width:380px">
+    <h2>설문 신고</h2>
+    <p class="subtitle">신고 이유를 선택해 주세요. 검토 후 조치하겠습니다.</p>
+    <div class="form-group">
+      <label>신고 사유</label>
+      <select id="report-reason">
+        <option value="spam">스팸 / 광고성 설문</option>
+        <option value="invalid-link">링크 오류 / 가짜 설문</option>
+        <option value="false-info">허위 정보</option>
+        <option value="inappropriate">부적절한 내용</option>
+        <option value="other">기타</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('reportModal')">취소</button>
+      <button class="btn btn-danger" onclick="submitReport()">신고하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── FIREBASE SDK ── -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+  import {
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    signOut, onAuthStateChanged, updateProfile, sendEmailVerification, sendPasswordResetEmail, reload
+  } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+  import {
+    getFirestore, collection, addDoc, getDocs, getDoc, setDoc, deleteDoc,
+    doc, updateDoc, increment, arrayUnion, query, orderBy, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBhS_bcEf_p87Ct1G2RZLqXvIvdjGZfXII",
+    authDomain: "research-poll.firebaseapp.com",
+    projectId: "research-poll",
+    storageBucket: "research-poll.firebasestorage.app",
+    messagingSenderId: "606076173916",
+    appId: "1:606076173916:web:34355e7c31a71a176ab099"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ── 예시 설문 데이터 ──
+  const DEMO_SURVEYS = [
+    // ── 경영대학 ──
+    { id: 'demo-1', title: 'MZ세대의 SNS 브랜드 인식과 구매 의도에 관한 연구', desc: '인스타그램·틱톡 이용 패턴이 브랜드 태도 및 구매 의도에 미치는 영향을 분석합니다. 만 19~34세 누구나 참여 가능하며 약 7분 소요됩니다.', field: '경영대학', dept: '경영학과', authorRole: '대학원생', authorName: '김지수', univ: '서울대학교', url: 'https://forms.gle/example1', target: 150, responses: 112, deadline: '2026-04-15', verified: true, views: 340, isDemo: true, targetDemo: { ageMin: 19, ageMax: 34, gender: 'all', occupations: [], conditions: [], raw: '만 19~34세 누구나' } },
+    { id: 'demo-20', title: 'ESG 경영 인식이 소비자 브랜드 신뢰와 구매 행동에 미치는 영향', desc: '환경·사회·지배구조(ESG) 활동에 대한 인식이 기업 이미지 및 소비 의향에 어떤 영향을 주는지 연구합니다. 약 8분 소요.', field: '경영대학', dept: '경영학과', authorRole: '대학원생', authorName: '한승우', univ: '서울대학교', url: 'https://forms.gle/example20', target: 120, responses: 54, deadline: '2026-05-10', verified: true, views: 161, isDemo: true, targetDemo: { ageMin: 18, ageMax: null, gender: 'all', occupations: [], conditions: [], raw: '만 18세 이상 누구나' } },
+    // ── 사회과학대학 ──
+    { id: 'demo-2', title: '대학생의 수면 습관과 학업 성취도 간의 상관관계 연구', desc: '수면 시간, 수면 질, 수면 패턴이 학점 및 인지 능력에 미치는 영향을 조사합니다. 현재 재학 중인 대학(원)생 대상, 약 5분 소요.', field: '사회과학대학', dept: '심리학과', authorRole: '학부생', authorName: '박민준', univ: '연세대학교', url: 'https://forms.gle/example2', target: 100, responses: 67, deadline: '2026-04-30', verified: true, views: 198, isDemo: true, targetDemo: { ageMin: null, ageMax: null, gender: 'all', occupations: ['학부생', '대학원생'], conditions: [], raw: '현재 재학 중인 대학(원)생' } },
+    { id: 'demo-3', title: '청년 1인 가구의 사회적 고립감 및 정신건강 실태 조사', desc: '1인 가구 청년(만 20~39세)의 사회적 관계망, 고립감, 우울 수준을 측정합니다. 심리 척도 포함, 10분 내외 소요.', field: '사회과학대학', dept: '사회학과', authorRole: '대학원생', authorName: '이서연', univ: '고려대학교', url: 'https://forms.gle/example3', target: 200, responses: 43, deadline: '2026-05-20', verified: true, views: 127, isDemo: true, targetDemo: { ageMin: 20, ageMax: 39, gender: 'all', occupations: [], conditions: ['1인 가구'], raw: '만 20~39세 1인 가구 청년' } },
+    { id: 'demo-10', title: '유튜브 알고리즘 노출이 대학생 정치적 의견 형성에 미치는 영향', desc: '추천 알고리즘 기반 동영상 소비가 정치적 태도의 양극화 및 의견 형성에 미치는 효과를 분석합니다. 약 9분 소요.', field: '사회과학대학', dept: '언론정보학과', authorRole: '대학원생', authorName: '오지민', univ: '서울대학교', url: 'https://forms.gle/example10', target: 180, responses: 72, deadline: '2026-05-25', verified: true, views: 204, isDemo: true, targetDemo: { ageMin: 18, ageMax: 35, gender: 'all', occupations: ['학부생', '대학원생'], conditions: [], raw: '만 18~35세 대학(원)생' } },
+    { id: 'demo-19', title: '가계 부채에 대한 MZ세대의 인식과 금융 행동 패턴 연구', desc: '학자금대출·전세대출 등 부채 경험이 MZ세대의 소비 결정 및 금융 불안에 미치는 영향을 조사합니다. 약 7분 소요.', field: '사회과학대학', dept: '경제학부', authorRole: '학부생', authorName: '조현아', univ: '서울대학교', url: 'https://forms.gle/example19', target: 150, responses: 38, deadline: '2026-06-10', verified: true, views: 89, isDemo: true, targetDemo: { ageMin: 19, ageMax: 39, gender: 'all', occupations: [], conditions: [], raw: '만 19~39세 MZ세대' } },
+    // ── 인문대학 ──
+    { id: 'demo-7', title: '한국어 신조어 수용 양상과 세대별 언어 인식 차이 연구', desc: '온라인에서 발생한 신조어(예: 갓생, 스벅, 좋댓구) 사용 패턴과 세대 간 언어 태도 차이를 분석합니다. 10~20대 및 40~50대 모두 참여 가능, 약 6분 소요.', field: '인문대학', dept: '국어국문학과', authorRole: '대학원생', authorName: '송다은', univ: '서울대학교', url: 'https://forms.gle/example7', target: 200, responses: 88, deadline: '2026-05-15', verified: true, views: 175, isDemo: true, targetDemo: { ageMin: null, ageMax: null, gender: 'all', occupations: [], conditions: [], raw: '누구나 (세대 비교 연구)' } },
+    { id: 'demo-8', title: '인공지능 시대 도덕적 책임 귀속에 관한 인식 조사', desc: 'AI의 판단 오류로 발생한 사고에서 책임 주체(개발자·기업·AI 자체)를 어떻게 인식하는지 탐색합니다. 철학적 시나리오 포함, 약 12분 소요.', field: '인문대학', dept: '철학과', authorRole: '교수', authorName: '황인철', univ: '서울대학교', url: 'https://forms.gle/example8', target: 100, responses: 29, deadline: '2026-06-30', verified: true, views: 93, isDemo: true, targetDemo: { ageMin: 18, ageMax: null, gender: 'all', occupations: [], conditions: [], raw: '만 18세 이상 누구나' } },
+    // ── 자연과학대학 ──
+    { id: 'demo-9', title: 'GMO 식품에 대한 과학적 지식 수준과 소비자 수용 의향 연구', desc: '유전자변형식품(GMO)에 대한 과학 지식 수준이 수용 의향 및 구매 행동에 미치는 영향을 분석합니다. 약 8분 소요.', field: '자연과학대학', dept: '생명과학부', authorRole: '대학원생', authorName: '강태양', univ: '서울대학교', url: 'https://forms.gle/example9', target: 120, responses: 47, deadline: '2026-05-31', verified: true, views: 132, isDemo: true, targetDemo: { ageMin: 18, ageMax: null, gender: 'all', occupations: [], conditions: [], raw: '만 18세 이상 누구나' } },
+    // ── 공과대학 ──
+    { id: 'demo-5', title: '스마트워치 건강 데이터 공유에 대한 프라이버시 인식 연구', desc: '웨어러블 기기 사용자의 개인 건강 데이터 공유 의향과 프라이버시 우려 요인을 조사합니다. 스마트워치 사용 경험자 우대, 8분 소요.', field: '공과대학', dept: '전기·정보공학부', authorRole: '대학원생', authorName: '최도현', univ: 'KAIST', url: 'https://forms.gle/example5', target: 80, responses: 31, deadline: '2026-06-01', verified: true, views: 94, isDemo: true, targetDemo: { ageMin: null, ageMax: null, gender: 'all', occupations: [], conditions: ['스마트워치 사용 경험'], raw: '스마트워치 사용 경험자' } },
+    { id: 'demo-11', title: '생성형 AI 활용이 대학생 프로그래밍 학습 효율에 미치는 영향', desc: 'ChatGPT·Copilot 등 AI 코딩 보조 도구 사용 패턴과 코딩 역량 자기평가 간의 관계를 분석합니다. 프로그래밍 수업 수강자 대상, 약 7분 소요.', field: '공과대학', dept: '컴퓨터공학부', authorRole: '학부생', authorName: '임준혁', univ: '서울대학교', url: 'https://forms.gle/example11', target: 100, responses: 61, deadline: '2026-04-25', verified: true, views: 247, isDemo: true, targetDemo: { ageMin: null, ageMax: null, gender: 'all', occupations: ['학부생', '대학원생'], conditions: [], raw: '프로그래밍 수업 수강 대학(원)생' } },
+    // ── 농업생명과학대학 ──
+    { id: 'demo-12', title: '대체 단백질 식품(식물성 고기)에 대한 소비자 수용성 연구', desc: '식물성 고기·배양육 등 대체 단백질 제품에 대한 인식, 구매 경험, 구매 의향을 탐색합니다. 누구나 참여 가능, 약 6분 소요.', field: '농업생명과학대학', dept: '식품·동물생명공학부', authorRole: '대학원생', authorName: '노지현', univ: '서울대학교', url: 'https://forms.gle/example12', target: 200, responses: 95, deadline: '2026-05-08', verified: true, views: 218, isDemo: true, targetDemo: { ageMin: 18, ageMax: null, gender: 'all', occupations: [], conditions: [], raw: '만 18세 이상 누구나' } },
+    // ── 미술대학 ──
+    { id: 'demo-13', title: '색채 심리가 앱 UI 디자인의 사용자 경험(UX)에 미치는 영향', desc: '배경색·버튼 색상 조합이 사용자의 감정 반응, 클릭 의도, 신뢰감에 어떤 영향을 주는지 실험 연구합니다. 이미지 자극물 포함, 약 10분 소요.', field: '미술대학', dept: '디자인학부', authorRole: '학부생', authorName: '유하은', univ: '홍익대학교', url: 'https://forms.gle/example13', target: 80, responses: 44, deadline: '2026-04-20', verified: false, views: 139, isDemo: true, targetDemo: { ageMin: 18, ageMax: 40, gender: 'all', occupations: [], conditions: [], raw: '만 18~40세 스마트폰 앱 이용자' } },
+    // ── 사범대학 ──
+    { id: 'demo-4', title: '비대면 강의 환경에서의 학습 몰입도 및 만족도 연구', desc: '온라인 수업 방식(실시간/녹화)에 따른 학습자의 몰입도 차이를 비교 분석합니다. 대학(원)생 대상, 약 6분 소요.', field: '사범대학', dept: '교육학과', authorRole: '교수', authorName: '정현우', univ: '한국교원대학교', url: 'https://forms.gle/example4', target: 120, responses: 89, deadline: '2026-04-10', verified: false, views: 215, isDemo: true, targetDemo: { ageMin: null, ageMax: null, gender: 'all', occupations: ['학부생', '대학원생'], conditions: [], raw: '대학(원)생 누구나' } },
+    { id: 'demo-18', title: '수학 불안과 자기효능감이 중·고생 수학 성취도에 미치는 영향', desc: '수학 시험 불안 수준, 자기효능감, 학습 동기가 복합적으로 성취도에 미치는 경로를 분석합니다. 현재 중·고등학생 또는 이 시기를 경험한 성인 대상, 약 8분 소요.', field: '사범대학', dept: '수학교육과', authorRole: '대학원생', authorName: '김태린', univ: '서울대학교', url: 'https://forms.gle/example18', target: 150, responses: 63, deadline: '2026-06-15', verified: true, views: 108, isDemo: true, targetDemo: { ageMin: null, ageMax: null, gender: 'all', occupations: [], conditions: [], raw: '중·고등학생 또는 경험한 성인' } },
+    // ── 생활과학대학 ──
+    { id: 'demo-14', title: '대학생 간편식(HMR) 이용 행태와 영양 균형 인식 조사', desc: '냉동식품·밀키트 등 가정 간편식 이용 빈도, 선택 기준, 영양 인식 수준을 조사합니다. 현재 대학생 대상, 약 5분 소요.', field: '생활과학대학', dept: '식품영양학과', authorRole: '학부생', authorName: '박소율', univ: '서울대학교', url: 'https://forms.gle/example14', target: 120, responses: 76, deadline: '2026-04-28', verified: true, views: 183, isDemo: true, targetDemo: { ageMin: null, ageMax: null, gender: 'all', occupations: ['학부생', '대학원생'], conditions: [], raw: '현재 재학 중인 대학(원)생' } },
+    // ── 수의과대학 ──
+    { id: 'demo-15', title: '반려동물 보호자의 동물복지 인식 및 수의료 이용 행태 조사', desc: '반려견·고양이 보호자를 대상으로 동물복지 인식, 예방접종·건강검진 이용률, 수의료비 인식을 파악합니다. 약 7분 소요.', field: '수의과대학', dept: '수의학과', authorRole: '교수', authorName: '문지호', univ: '서울대학교', url: 'https://forms.gle/example15', target: 250, responses: 134, deadline: '2026-05-30', verified: true, views: 320, isDemo: true, targetDemo: { ageMin: 18, ageMax: null, gender: 'all', occupations: [], conditions: ['반려동물 보호자'], raw: '반려견 또는 고양이를 키우는 성인' } },
+    // ── 약학대학 ──
+    { id: 'demo-16', title: '대학생의 OTC 의약품 자가 복약 행동과 의약품 안전 인식', desc: '처방전 없이 구매 가능한 일반의약품 복용 행태, 부작용 인식, 약물 상호작용 지식 수준을 조사합니다. 약 6분 소요.', field: '약학대학', dept: '약학과', authorRole: '대학원생', authorName: '신예원', univ: '서울대학교', url: 'https://forms.gle/example16', target: 150, responses: 57, deadline: '2026-06-05', verified: true, views: 141, isDemo: true, targetDemo: { ageMin: 18, ageMax: 35, gender: 'all', occupations: [], conditions: [], raw: '만 18~35세 누구나' } },
+    // ── 음악대학 ──
+    { id: 'demo-17', title: '음악 감상 활동이 대학생 스트레스 완화 및 정서 조절에 미치는 영향', desc: '클래식·팝·재즈 등 장르별 음악 감상이 스트레스 지수와 긍정 정서 유발에 미치는 효과를 탐색합니다. 약 7분 소요.', field: '음악대학', dept: '성악과', authorRole: '학부생', authorName: '이다현', univ: '서울대학교', url: 'https://forms.gle/example17', target: 100, responses: 42, deadline: '2026-05-12', verified: true, views: 116, isDemo: true, targetDemo: { ageMin: null, ageMax: null, gender: 'all', occupations: ['학부생', '대학원생'], conditions: [], raw: '대학(원)생 누구나' } },
+    // ── 의과대학 ──
+    { id: 'demo-6', title: '코로나19 이후 외식 행동 변화와 식품 안전 인식 조사', desc: '팬데믹 경험이 외식 빈도, 음식 선택 기준, 위생 민감도에 미친 장기적 변화를 분석합니다. 만 18세 이상 누구나, 5분 소요.', field: '의과대학', dept: '의학과', authorRole: '교수', authorName: '윤소희', univ: '서울대학교', url: 'https://forms.gle/example6', target: 300, responses: 187, deadline: '2026-05-01', verified: true, views: 412, isDemo: true, targetDemo: { ageMin: 18, ageMax: null, gender: 'all', occupations: [], conditions: [], raw: '만 18세 이상 누구나' } },
+    // ── 간호대학 ──
+    { id: 'demo-21', title: '입원 환자의 간호사 소통 방식에 대한 만족도 및 치료 순응도 연구', desc: '입원 경험이 있는 성인을 대상으로 간호사의 설명 방식·공감 표현이 치료 협조에 미치는 영향을 조사합니다. 약 8분 소요.', field: '간호대학', dept: '간호학과', authorRole: '대학원생', authorName: '최유나', univ: '서울대학교', url: 'https://forms.gle/example21', target: 100, responses: 33, deadline: '2026-06-20', verified: true, views: 77, isDemo: true, targetDemo: { ageMin: 18, ageMax: null, gender: 'all', occupations: [], conditions: ['입원 경험 있는 성인'], raw: '입원 경험이 있는 만 18세 이상' } },
+    // ── 자유전공학부 ──
+    { id: 'demo-22', title: '대학 전공 선택 의사결정 과정과 사회적 영향 요인 연구', desc: '부모 기대·취업 전망·개인 흥미 등 전공 선택 시 작용하는 요인과 이후 만족도 간의 관계를 분석합니다. 대학(원)생 또는 졸업생 대상, 약 9분 소요.', field: '자유전공학부', dept: '자유전공학부', authorRole: '학부생', authorName: '서준호', univ: '서울대학교', url: 'https://forms.gle/example22', target: 200, responses: 81, deadline: '2026-05-22', verified: true, views: 195, isDemo: true, targetDemo: { ageMin: 18, ageMax: 40, gender: 'all', occupations: ['학부생', '대학원생'], conditions: [], raw: '대학(원)생 또는 대졸 성인' } },
+  ];
+
+  // ── 단과대 → 학과 매핑 ──
+  const COLLEGE_MAP = {
+    '인문대학': ['국어국문학과','중어중문학과','영어영문학과','불어불문학과','독어독문학과','러시아어문학과','서어서문학과','언어학과','국사학과','동양사학과','서양사학과','철학과','고고미술사학과'],
+    '사회과학대학': ['정치외교학부','경제학부','사회학과','인류학과','심리학과','지리학과','사회복지학과','언론정보학과'],
+    '자연과학대학': ['수리과학부','통계학과','물리·천문학부','화학부','생명과학부','지구환경과학부'],
+    '경영대학': ['경영학과'],
+    '공과대학': ['건축학과','건축공학과','토목·환경공학부','기계공학부','항공우주공학과','전기·정보공학부','컴퓨터공학부','화학생물공학부','재료공학부','산업공학과','에너지자원공학과','원자핵공학과'],
+    '농업생명과학대학': ['식물생산과학부','산림과학부','응용생물화학부','식품·동물생명공학부','바이오시스템·소재학부','농경제사회학부','조경·지역시스템공학부'],
+    '미술대학': ['동양화과','서양화과','조소과','공예과','디자인학부'],
+    '사범대학': ['교육학과','한국어교육과','영어교육과','불어교육과','독어교육과','사회교육과','역사교육과','지리교육과','윤리교육과','수학교육과','물리교육과','화학교육과','생물교육과','지구과학교육과','체육교육과'],
+    '생활과학대학': ['소비자학과','아동가족학과','식품영양학과','의류학과'],
+    '수의과대학': ['수의학과'],
+    '약학대학': ['약학과'],
+    '음악대학': ['작곡과','이론과','피아노과','현악과','관악과','성악과','국악과'],
+    '의과대학': ['의학과'],
+    '간호대학': ['간호학과'],
+    '자유전공학부': ['자유전공학부'],
+    '기타': [],
+  };
+
+  // ── Anthropic API 키 (AI 매칭) ──
+  // https://console.anthropic.com 에서 발급 후 아래에 입력하세요.
+  const ANTHROPIC_API_KEY = '';
+
+  // ── 전역 상태 ──
+  let currentUser = null;
+  let userDemographics = {}; // { gender, birthYear }
+  let selectedRoles = new Set();    // 학부생·대학원생·교수
+  let selectedColleges = new Set(); // 단과대학
+  let currentSubFilter = new Set(); // 학과
+  let matchMode = false;
+  const ROLE_NAMES = new Set(['학부생', '대학원생', '교수']);
+  let currentSort = 'newest';
+  let pendingAction = null;
+  let surveysCache = [];
+  let userParticipatedIds = new Set();
+  let editingId = null;
+  let reportingId = null;
+  let signupCredential = null;
+  window.editingId = null;
+
+  // ── 날짜 헬퍼 ──
+  function isExpired(deadline) {
+    if (!deadline || deadline === '미정') return false;
+    return new Date(deadline) < new Date();
+  }
+
+  // ── 로그인 상태 감지 ──
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = {
+        uid: user.uid, email: user.email,
+        emailVerified: user.emailVerified,
+        verified: user.email.includes('.ac.kr') || user.email.includes('.edu')
+      };
+      if (user.displayName && user.displayName.includes('|')) {
+        const [name, role, univ] = user.displayName.split('|');
+        Object.assign(currentUser, { name, role, univ });
+      } else {
+        currentUser.name = user.displayName || user.email.split('@')[0];
+      }
+      await loadUserData();
+    } else {
+      currentUser = null;
+      userParticipatedIds = new Set();
+    }
+    updateNav();
+    await loadSurveys();
+  });
+
+  // ── 유저 참여 데이터 로드 ──
+  async function loadUserData() {
+    if (!currentUser) return;
+    try {
+      const snap = await getDoc(doc(db, 'users', currentUser.uid));
+      if (snap.exists()) {
+        const d = snap.data();
+        userParticipatedIds = new Set(d.participatedSurveyIds || []);
+        userDemographics = d.demographics || {};
+      }
+    } catch { }
+  }
+
+  // ── 설문 목록 로드 ──
+  async function loadSurveys() {
+    const grid = document.getElementById('cardGrid');
+    grid.innerHTML = '<div class="loading-grid"><div class="spinner"></div><p>설문을 불러오는 중...</p></div>';
+    try {
+      const q = query(collection(db, 'surveys'), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+      const fs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      surveysCache = [...fs, ...DEMO_SURVEYS];
+    } catch {
+      surveysCache = [...DEMO_SURVEYS];
+    }
+    renderCards();
+  }
+
+  // ── 카드 렌더링 ──
+  window.renderCards = function () {
+    const grid = document.getElementById('cardGrid');
+    const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+
+    let list = surveysCache.filter(s => {
+      const ms = !q || s.title.toLowerCase().includes(q) || (s.field || '').toLowerCase().includes(q) || (s.dept || '').toLowerCase().includes(q);
+      if (matchMode) {
+        const m = calcMatch(s);
+        return ms && m !== null && m.match;
+      }
+      const roleMatch = selectedRoles.size === 0 || selectedRoles.has(s.authorRole);
+      const collegeMatch = selectedColleges.size === 0 || selectedColleges.has(s.field);
+      const deptMatch = currentSubFilter.size === 0 || currentSubFilter.has(s.dept);
+      return ms && roleMatch && collegeMatch && deptMatch;
+    });
+
+    // 정렬
+    const now = new Date();
+    if (currentSort === 'newest') {
+      list.sort((a, b) => {
+        const da = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+        const db_ = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+        return db_ - da;
+      });
+    } else if (currentSort === 'deadline') {
+      list.sort((a, b) => {
+        const ea = isExpired(a.deadline), eb = isExpired(b.deadline);
+        if (ea && !eb) return 1;
+        if (!ea && eb) return -1;
+        const da = a.deadline && a.deadline !== '미정' ? new Date(a.deadline) : new Date('9999-12-31');
+        const db_ = b.deadline && b.deadline !== '미정' ? new Date(b.deadline) : new Date('9999-12-31');
+        return da - db_;
+      });
+    } else if (currentSort === 'rate') {
+      list.sort((a, b) => {
+        const ra = (a.responses || 0) / (a.target || 100);
+        const rb = (b.responses || 0) / (b.target || 100);
+        return rb - ra;
+      });
+    }
+
+    if (!list.length) {
+      const hasFilters = selectedRoles.size > 0 || selectedColleges.size > 0 || matchMode;
+      grid.innerHTML = `<div class="empty">
+        <div class="icon">🔍</div>
+        <p>조건에 맞는 설문이 없어요</p>
+        ${hasFilters ? `<button class="btn-reset" onclick="setFilter('all', document.getElementById('allFilterBtn'))">필터 초기화</button>` : ''}
+      </div>`;
+      return;
+    }
+
+    grid.innerHTML = list.map((s, i) => {
+      const pct = Math.min(Math.round(((s.responses || 0) / (s.target || 100)) * 100), 100);
+      const expired = isExpired(s.deadline);
+      const participated = userParticipatedIds.has(s.id);
+      const isOwner = currentUser && s.authorUid === currentUser.uid;
+      const matchInfo = calcMatch(s);
+
+      // 마감 임박 여부 (7일 이내)
+      const deadlineDate = s.deadline ? new Date(s.deadline) : null;
+      const daysLeft = deadlineDate ? Math.ceil((deadlineDate - new Date()) / 86400000) : null;
+      const isSoon = daysLeft !== null && daysLeft <= 7 && daysLeft > 0;
+      const deadlineLabel = expired ? '마감됨' : (daysLeft !== null ? (isSoon ? `D-${daysLeft}` : s.deadline) : '미정');
+
+      return `
+      <div class="card${expired ? ' expired' : ''}${participated ? ' done-card' : ''}" style="animation-delay:${i * 0.05}s" onclick="openDetail('${s.id}')">
+        <div class="card-top">
+          <span class="card-univ">${s.univ || '소속 없음'}</span>
+          <span class="card-deadline${isSoon ? ' soon' : ''}">${deadlineLabel}</span>
+        </div>
+        <div class="card-badges">
+          <span class="tag">${s.field || ''}</span>
+          ${s.dept ? `<span class="tag" style="background:var(--accent-light);color:var(--accent-mid);">${s.dept}</span>` : ''}
+          <span class="tag">${s.authorRole || ''}</span>
+          ${s.verified ? '<span class="tag verified">✓ 인증</span>' : ''}
+          ${participated ? '<span class="tag participated">✓ 참여완료</span>' : ''}
+          ${matchInfo && matchInfo.match ? '<span class="tag match-tag">✓ 맞춤</span>' : ''}
+        </div>
+        ${matchInfo && !matchInfo.match && matchInfo.reasons?.length ? `<div class="no-match-reason">⚠ ${matchInfo.reasons[0]}</div>` : ''}
+        ${matchInfo && matchInfo.summary && matchInfo.match ? `<div class="target-info"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="12" x2="12" y2="16"/></svg>${matchInfo.summary}</div>` : ''}
+        <h3>${s.title}</h3>
+        <div class="progress-row">
+          <div class="progress-label"><span>응답 현황</span><span>${s.responses || 0} / ${s.target || 100}명 (${pct}%)</span></div>
+          <div class="progress-track"><div class="progress-fill${pct >= 100 ? ' full' : ''}" style="width:${pct}%"></div></div>
+        </div>
+        <div class="card-footer">
+          ${!expired && !participated
+            ? `<button class="btn btn-primary btn-sm" style="flex:1" onclick="event.stopPropagation();requireLogin('participate','${s.id}')">참여하기</button>`
+            : `<button class="btn btn-sm" style="flex:1;background:var(--tag-bg);color:var(--muted);cursor:default;" disabled>${expired ? '마감된 설문' : '✓ 참여 완료'}</button>`
+          }
+          ${isOwner ? `
+            <button class="btn btn-sm" style="background:var(--tag-bg);color:var(--muted);" onclick="event.stopPropagation();openEditSurvey('${s.id}')">수정</button>
+            <button class="btn btn-sm" style="background:var(--red-light);color:var(--red);" onclick="event.stopPropagation();deleteSurvey('${s.id}')">삭제</button>
+          ` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  };
+
+  const COLLEGE_NAMES = new Set(Object.keys(COLLEGE_MAP));
+
+  function updateSubFilterRow() {
+    const subRow = document.getElementById('subFilterRow');
+    if (selectedColleges.size === 0) {
+      subRow.style.display = 'none';
+      subRow.innerHTML = '';
+      currentSubFilter = new Set();
+      return;
+    }
+    // 선택된 단과대 전체의 학과 합집합
+    const allDepts = [...new Set([...selectedColleges].flatMap(c => COLLEGE_MAP[c] || []))];
+    if (allDepts.length === 0) { subRow.style.display = 'none'; return; }
+    // 더 이상 유효하지 않은 학과 선택 제거
+    currentSubFilter = new Set([...currentSubFilter].filter(d => allDepts.includes(d)));
+    subRow.innerHTML =
+      `<button class="sub-filter-btn${currentSubFilter.size === 0 ? ' active' : ''}" data-all onclick="setSubFilter('__all__',this)">전체</button>` +
+      allDepts.map(d => `<button class="sub-filter-btn${currentSubFilter.has(d) ? ' active' : ''}" onclick="setSubFilter('${d}',this)">${d}</button>`).join('');
+    subRow.style.display = 'flex';
+  }
+
+  function syncAllBtn() {
+    const allBtn = document.getElementById('allFilterBtn');
+    if (!allBtn) return;
+    const nothingSelected = selectedRoles.size === 0 && selectedColleges.size === 0 && !matchMode;
+    allBtn.classList.toggle('active', nothingSelected);
+  }
+
+  window.onSearchInput = function() {
+    const val = document.getElementById('searchInput').value;
+    const clearBtn = document.getElementById('searchClear');
+    if (clearBtn) clearBtn.style.display = val ? 'block' : 'none';
+    renderCards();
+  };
+
+  window.clearSearch = function() {
+    const input = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('searchClear');
+    if (input) input.value = '';
+    if (clearBtn) clearBtn.style.display = 'none';
+    renderCards();
+  };
+
+  window.setFilter = function (f, el) {
+    if (f === 'all') {
+      selectedRoles = new Set();
+      selectedColleges = new Set();
+      currentSubFilter = new Set();
+      matchMode = false;
+      // uncheck all checkboxes
+      document.querySelectorAll('.fdrop-panel input[type=checkbox]').forEach(cb => cb.checked = false);
+      document.querySelectorAll('.fdrop').forEach(d => d.classList.remove('has-value'));
+      document.getElementById('roleCount').style.display = 'none';
+      document.getElementById('collegeCount').style.display = 'none';
+      document.getElementById('allFilterBtn').classList.add('active');
+      document.getElementById('matchFilterBtn').classList.remove('active');
+      updateFilterChips();
+      renderCards();
+      return;
+    }
+    if (f === 'match') {
+      if (!currentUser) { showToast('로그인 후 이용할 수 있습니다.'); return; }
+      if (!userDemographics.birthYear) {
+        showToast('프로필에서 인적사항을 완성하면 맞춤 설문을 볼 수 있습니다.');
+        openProfile();
+        return;
+      }
+      matchMode = !matchMode;
+      el.classList.toggle('active', matchMode);
+      syncAllBtn();
+      renderCards();
+      return;
+    }
+  };
+
+  window.toggleFdrop = function(id) {
+    const el = document.getElementById(id);
+    const isOpen = el.classList.contains('open');
+    // close all
+    document.querySelectorAll('.fdrop.open').forEach(d => d.classList.remove('open'));
+    if (!isOpen) el.classList.add('open');
+  };
+
+  window.onRoleCheck = function(cb) {
+    if (cb.checked) selectedRoles.add(cb.value);
+    else selectedRoles.delete(cb.value);
+    const count = selectedRoles.size;
+    const countEl = document.getElementById('roleCount');
+    countEl.textContent = count;
+    countEl.style.display = count ? '' : 'none';
+    document.getElementById('fdropRole').classList.toggle('has-value', count > 0);
+    syncAllBtn();
+    updateFilterChips();
+    renderCards();
+  };
+
+  window.onCollegeCheck = function(cb) {
+    if (cb.checked) selectedColleges.add(cb.value);
+    else selectedColleges.delete(cb.value);
+    const count = selectedColleges.size;
+    const countEl = document.getElementById('collegeCount');
+    countEl.textContent = count;
+    countEl.style.display = count ? '' : 'none';
+    document.getElementById('fdropCollege').classList.toggle('has-value', count > 0);
+    syncAllBtn();
+    updateFilterChips();
+    renderCards();
+  };
+
+  window.clearRoles = function() {
+    selectedRoles = new Set();
+    document.querySelectorAll('#fdropRole input[type=checkbox]').forEach(cb => cb.checked = false);
+    document.getElementById('roleCount').style.display = 'none';
+    document.getElementById('fdropRole').classList.remove('has-value');
+    syncAllBtn();
+    updateFilterChips();
+    renderCards();
+  };
+
+  window.clearColleges = function() {
+    selectedColleges = new Set();
+    currentSubFilter = new Set();
+    document.querySelectorAll('#fdropCollege input[type=checkbox]').forEach(cb => cb.checked = false);
+    document.getElementById('collegeCount').style.display = 'none';
+    document.getElementById('fdropCollege').classList.remove('has-value');
+    syncAllBtn();
+    updateFilterChips();
+    renderCards();
+  };
+
+  window.removeChip = function(type, value) {
+    if (type === 'role') {
+      selectedRoles.delete(value);
+      const cb = document.querySelector(`#fdropRole input[value="${value}"]`);
+      if (cb) cb.checked = false;
+      const count = selectedRoles.size;
+      const countEl = document.getElementById('roleCount');
+      countEl.textContent = count;
+      countEl.style.display = count ? '' : 'none';
+      document.getElementById('fdropRole').classList.toggle('has-value', count > 0);
+    } else if (type === 'college') {
+      selectedColleges.delete(value);
+      const cb = document.querySelector(`#fdropCollege input[value="${value}"]`);
+      if (cb) cb.checked = false;
+      const count = selectedColleges.size;
+      const countEl = document.getElementById('collegeCount');
+      countEl.textContent = count;
+      countEl.style.display = count ? '' : 'none';
+      document.getElementById('fdropCollege').classList.toggle('has-value', count > 0);
+    }
+    syncAllBtn();
+    updateFilterChips();
+    renderCards();
+  };
+
+  function updateFilterChips() {
+    const chips = document.getElementById('filterChips');
+    const items = [
+      ...[...selectedRoles].map(v => ({ type: 'role', value: v, label: v })),
+      ...[...selectedColleges].map(v => ({ type: 'college', value: v, label: v })),
+    ];
+    if (!items.length) { chips.style.display = 'none'; chips.innerHTML = ''; return; }
+    chips.style.display = 'flex';
+    chips.innerHTML = items.map(({ type, value, label }) =>
+      `<span class="fchip">${label}<button class="fchip-remove" onclick="removeChip('${type}','${value}')" aria-label="제거">×</button></span>`
+    ).join('');
+  }
+
+  window.setSubFilter = function (dept, el) {
+    const allBtn = document.querySelector('.sub-filter-btn[data-all]');
+    if (dept === '__all__') {
+      currentSubFilter = new Set();
+      document.querySelectorAll('.sub-filter-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+    } else {
+      if (currentSubFilter.has(dept)) {
+        currentSubFilter.delete(dept);
+        el.classList.remove('active');
+      } else {
+        currentSubFilter.add(dept);
+        el.classList.add('active');
+      }
+      // 아무것도 선택 안 된 경우 전체 버튼 활성화
+      if (allBtn) allBtn.classList.toggle('active', currentSubFilter.size === 0);
+    }
+    renderCards();
+  };
+
+  window.setSort = function (s, el) {
+    currentSort = s;
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderCards();
+  };
+
+  // ── 모달 ──
+  window.openModal = id => { document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden'; };
+  window.closeModal = id => { document.getElementById(id).classList.remove('open'); document.body.style.overflow = ''; };
+  window.switchModal = (a, b) => { closeModal(a); openModal(b); };
+  document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) { closeModal(o.id); editingId = null; } }));
+
+  // ── 로그인 필요 ──
+  window.requireLogin = async function (action, data) {
+    if (currentUser) {
+      if (action === 'participate') { participateSurvey(data); return; }
+      if (action === 'upload') {
+        if (!currentUser.emailVerified) {
+          showToast('이메일 인증 후 설문을 올릴 수 있습니다. 메일함을 확인해 주세요.');
+          return;
+        }
+        const count = userParticipatedIds.size;
+        if (count < 3) {
+          showToast(`설문 ${3 - count}개를 더 응답해야 올릴 수 있습니다 (${count}/3)`);
+          return;
+        }
+        editingId = null;
+        document.getElementById('uploadModalTitle').textContent = '설문 올리기';
+        document.getElementById('uploadBtn').textContent = '등록하기';
+        ['up-title','up-desc','up-url','up-target','up-deadline'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('up-field').value = '인문대학';
+        onFieldChange();
+        document.getElementById('up-dept').value = '';
+        openModal('uploadModal');
+      }
+    } else {
+      pendingAction = { action, data };
+      showToast('로그인 후 이용할 수 있습니다.');
+      openModal('loginModal');
+    }
+  };
+
+  // ── 로그인 ──
+  window.doLogin = async function () {
+    const email = document.getElementById('li-email').value.trim();
+    const pw = document.getElementById('li-pw').value;
+    const err = document.getElementById('err-login');
+    const btn = document.getElementById('loginBtn');
+    const liEmailEl = document.getElementById('li-email');
+    const liPwEl = document.getElementById('li-pw');
+    if (!email || !pw) {
+      err.classList.add('show');
+      if (!email) liEmailEl.classList.add('input-error');
+      if (!pw) liPwEl.classList.add('input-error');
+      return;
+    }
+    err.classList.remove('show');
+    liEmailEl.classList.remove('input-error');
+    liPwEl.classList.remove('input-error');
+    btn.classList.add('loading'); btn.disabled = true;
+    try {
+      await signInWithEmailAndPassword(auth, email, pw);
+      closeModal('loginModal');
+      showToast('로그인되었습니다 👋');
+      if (pendingAction) {
+        const { action, data } = pendingAction; pendingAction = null;
+        if (action === 'upload') requireLogin('upload');
+        if (action === 'participate') participateSurvey(data);
+      }
+    } catch {
+      err.classList.add('show');
+    } finally {
+      btn.classList.remove('loading'); btn.disabled = false;
+    }
+  };
+
+  // ── 비밀번호 재설정 ──
+  window.doReset = async function () {
+    const email = document.getElementById('reset-email').value.trim();
+    const err = document.getElementById('err-reset');
+    const btn = document.getElementById('resetBtn');
+    if (!email || !email.includes('@')) { err.classList.add('show'); return; }
+    err.classList.remove('show');
+    btn.classList.add('loading'); btn.disabled = true;
+    try {
+      await sendPasswordResetEmail(auth, email);
+      document.getElementById('resetDoneEmail').textContent = `${email}로 재설정 링크를 보냈습니다.`;
+      document.getElementById('resetForm').style.display = 'none';
+      document.getElementById('resetDone').style.display = 'block';
+    } catch (e) {
+      err.classList.add('show');
+    } finally {
+      btn.classList.remove('loading'); btn.disabled = false;
+    }
+  };
+
+  // ── 회원가입 Step 1 → 2 ──
+  window.goStep2 = async function () {
+    const name = document.getElementById('su-name').value.trim();
+    const email = document.getElementById('su-email').value.trim();
+    const pw = document.getElementById('su-pw').value;
+    const role = document.getElementById('su-role').value;
+    const gender = document.getElementById('su-gender').value;
+    const birthYearRaw = document.getElementById('su-birthyear').value.trim();
+    const birthYear = parseInt(birthYearRaw);
+    const agree = document.getElementById('su-agree').checked;
+    const showErr = (errId, inputId, cond) => {
+      document.getElementById(errId).classList.toggle('show', !cond);
+      const el = document.getElementById(inputId);
+      if (el) el.classList.toggle('input-error', !cond);
+    };
+    showErr('err-name', 'su-name', name);
+    showErr('err-email', 'su-email', email && email.includes('@'));
+    showErr('err-pw', 'su-pw', pw.length >= 6);
+    showErr('err-role', 'su-role', role);
+    showErr('err-gender', 'su-gender', gender);
+    showErr('err-birthyear', 'su-birthyear', birthYear >= 1940 && birthYear <= 2010);
+    document.getElementById('err-agree').classList.toggle('show', !agree);
+    if (!name || !email.includes('@') || pw.length < 6 || !role || !gender || !(birthYear >= 1940 && birthYear <= 2010) || !agree) return;
+
+    const btn = document.querySelector('#step1 .btn-primary');
+    btn.classList.add('loading'); btn.disabled = true;
+    try {
+      const univ = document.getElementById('su-univ').value.trim() || '소속 없음';
+      const cred = await createUserWithEmailAndPassword(auth, email, pw);
+      signupCredential = cred;
+      await updateProfile(cred.user, { displayName: `${name}|${role}|${univ}` });
+      await setDoc(doc(db, 'users', cred.user.uid), { demographics: { gender, birthYear } }, { merge: true });
+      await sendEmailVerification(cred.user);
+      document.getElementById('step2-email').textContent = email;
+      setStep(2);
+    } catch (e) {
+      const msg = e.code === 'auth/email-already-in-use' ? '이미 사용 중인 이메일입니다.' : '오류가 발생했습니다. 다시 시도해 주세요.';
+      showToast(msg);
+    } finally {
+      btn.classList.remove('loading'); btn.disabled = false;
+    }
+  };
+
+  // ── 이메일 인증 재전송 ──
+  window.resendVerification = async function () {
+    if (signupCredential?.user) {
+      try { await sendEmailVerification(signupCredential.user); showToast('인증 이메일을 재전송했습니다.'); }
+      catch { showToast('재전송에 실패했습니다. 잠시 후 다시 시도해 주세요.'); }
+    }
+  };
+
+  // ── 인증 완료 확인 ──
+  window.checkVerification = async function () {
+    const btn = document.getElementById('verifyCheckBtn');
+    btn.classList.add('loading'); btn.disabled = true;
+    try {
+      if (signupCredential?.user) await reload(signupCredential.user);
+      const user = auth.currentUser;
+      if (user?.emailVerified) {
+        document.getElementById('err-verify').classList.remove('show');
+        setStep(3);
+      } else {
+        document.getElementById('err-verify').classList.add('show');
+      }
+    } catch { showToast('오류가 발생했습니다.'); }
+    finally { btn.classList.remove('loading'); btn.disabled = false; }
+  };
+
+  // ── AI로 설문 대상 조건 추출 ──
+  async function extractDemographics(title, desc) {
+    if (!ANTHROPIC_API_KEY) return null;
+    const prompt = `다음 연구 설문의 제목과 설명을 읽고, 참여 대상 조건을 JSON으로 추출하세요.
+제목: ${title}
+설명: ${desc}
+
+아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
+{"ageMin":null,"ageMax":null,"gender":"all","occupations":[],"conditions":[],"raw":"한 문장 요약"}
+
+- ageMin/ageMax: 나이 제한 없으면 null
+- gender: "all" / "male" / "female"
+- occupations: ["학부생","대학원생","직장인","일반인"] 중 해당하는 것들 (제한 없으면 [])
+- conditions: 특별 조건 배열 (예: ["비만","1인 가구"])
+- raw: 대상을 자연어로 한 문장 요약`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 300,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await res.json();
+      return JSON.parse(data.content[0].text);
+    } catch { return null; }
+  }
+
+  // ── 맞춤 매칭 계산 ──
+  function calcMatch(survey) {
+    const td = survey.targetDemo;
+    if (!td || !userDemographics.birthYear) return null;
+    const mismatches = [];
+    const age = new Date().getFullYear() - userDemographics.birthYear;
+    if (td.ageMin && age < td.ageMin) mismatches.push(`${td.ageMin}세 이상 대상`);
+    if (td.ageMax && age > td.ageMax) mismatches.push(`${td.ageMax}세 이하 대상`);
+    if (td.gender && td.gender !== 'all') {
+      const gMap = { male: 'male', female: 'female' };
+      if (gMap[td.gender] !== userDemographics.gender) mismatches.push(td.gender === 'male' ? '남성 대상' : '여성 대상');
+    }
+    if (td.occupations && td.occupations.length > 0 && currentUser?.role) {
+      const ok = td.occupations.some(o => currentUser.role.includes(o) || o.includes(currentUser.role));
+      if (!ok) mismatches.push(`${td.occupations.join('/')} 대상`);
+    }
+    return { match: mismatches.length === 0, reasons: mismatches, summary: td.raw || '' };
+  }
+
+  // ── 업로드 폼: 단과대 변경 시 학과 목록 업데이트 ──
+  window.onFieldChange = function () {
+    const college = document.getElementById('up-field').value;
+    const deptSel = document.getElementById('up-dept');
+    const depts = COLLEGE_MAP[college] || [];
+    deptSel.innerHTML = '<option value="">학과 선택 (선택사항)</option>' +
+      depts.map(d => `<option value="${d}">${d}</option>`).join('');
+  };
+
+  window.setStep = function (n) {
+    [1, 2, 3].forEach(i => {
+      document.getElementById('step' + i).classList.toggle('active', i === n);
+      document.getElementById('dot' + i).classList.toggle('done', i <= n);
+    });
+  };
+
+  // ── 로그아웃 ──
+  window.logout = async function () {
+    await signOut(auth);
+    showToast('로그아웃되었습니다.');
+  };
+
+  // ── 네비게이션 업데이트 ──
+  function updateNav() {
+    const right = document.getElementById('navRight');
+    const center = document.getElementById('navProgress');
+    const banner = document.getElementById('demoBanner');
+    if (currentUser) {
+      if (banner) banner.style.display = 'none';
+      const count = userParticipatedIds.size;
+      const done = count >= 3;
+      const dots = [0,1,2].map(i => `<div class="dot${i < count ? ' filled' : ''}"></div>`).join('');
+      center.innerHTML = `
+        <div class="nav-progress${done ? ' done' : ''}" onclick="openProfile()">
+          <div class="dots">${dots}</div>
+          <span>${done ? '설문 올리기 가능' : `응답 ${Math.min(count,3)}/3`}</span>
+        </div>`;
+      right.innerHTML = `
+        <div class="profile-chip" onclick="openProfile()">
+          <div class="avatar">${(currentUser.name || 'U')[0].toUpperCase()}</div>
+          <span>${currentUser.name}</span>
+          ${currentUser.verified ? '<span style="color:#60a5fa;font-size:11px;">✓</span>' : ''}
+        </div>
+        <button class="btn btn-ghost" style="font-size:13px;padding:6px 14px;" onclick="logout()">로그아웃</button>`;
+    } else {
+      center.innerHTML = '';
+      right.innerHTML = `
+        <button class="btn btn-ghost" style="font-size:13px;padding:6px 14px;" onclick="openModal('loginModal')">로그인</button>
+        <button class="btn btn-primary" style="font-size:13px;padding:6px 14px;" onclick="openModal('signupModal')">회원가입</button>`;
+    }
+  }
+
+  // ── 설문 등록 / 수정 ──
+  window.submitSurvey = async function () {
+    const title = document.getElementById('up-title').value.trim();
+    const url = document.getElementById('up-url').value.trim();
+    let ok = true;
+    if (!title) { document.getElementById('err-up-title').classList.add('show'); ok = false; }
+    else document.getElementById('err-up-title').classList.remove('show');
+    if (!url || !url.startsWith('http')) { document.getElementById('err-up-url').classList.add('show'); ok = false; }
+    else document.getElementById('err-up-url').classList.remove('show');
+    if (!ok) return;
+
+    const btn = document.getElementById('uploadBtn');
+    btn.classList.add('loading'); btn.disabled = true;
+    const data = {
+      title, url,
+      desc: document.getElementById('up-desc').value.trim() || '설명이 없습니다.',
+      field: document.getElementById('up-field').value,
+      dept: document.getElementById('up-dept').value || '',
+      target: parseInt(document.getElementById('up-target').value) || 100,
+      deadline: document.getElementById('up-deadline').value || '미정',
+    };
+
+    try {
+      if (editingId) {
+        await updateDoc(doc(db, 'surveys', editingId), data);
+        const idx = surveysCache.findIndex(s => s.id === editingId);
+        if (idx !== -1) Object.assign(surveysCache[idx], data);
+        showToast('설문이 수정되었습니다.');
+        editingId = null;
+      } else {
+        const full = { ...data, authorRole: currentUser.role || '사용자', authorName: currentUser.name, authorUid: currentUser.uid, univ: currentUser.univ || '소속 없음', responses: 0, verified: currentUser.verified, views: 0, createdAt: serverTimestamp() };
+        const ref = await addDoc(collection(db, 'surveys'), full);
+        const localEntry = { id: ref.id, ...full, createdAt: new Date() };
+        surveysCache.unshift(localEntry);
+        showToast('설문이 등록되었습니다! 🎉');
+        // AI로 대상 조건 자동 분석
+        if (ANTHROPIC_API_KEY) {
+          showToast('AI가 대상 조건을 분석 중입니다...');
+          const td = await extractDemographics(data.title, data.desc);
+          if (td) {
+            await updateDoc(doc(db, 'surveys', ref.id), { targetDemo: td });
+            localEntry.targetDemo = td;
+            renderCards();
+          }
+        }
+      }
+      closeModal('uploadModal');
+      ['up-title','up-desc','up-url','up-target','up-deadline'].forEach(id => document.getElementById(id).value = '');
+      renderCards();
+    } catch (e) {
+      showToast('오류: ' + e.message);
+    } finally {
+      btn.classList.remove('loading'); btn.disabled = false;
+    }
+  };
+
+  // ── 설문 수정 열기 ──
+  window.openEditSurvey = function (id) {
+    const s = surveysCache.find(x => x.id === id);
+    if (!s) return;
+    editingId = id;
+    document.getElementById('uploadModalTitle').textContent = '설문 수정';
+    document.getElementById('uploadBtn').textContent = '수정하기';
+    document.getElementById('up-title').value = s.title || '';
+    document.getElementById('up-desc').value = s.desc || '';
+    document.getElementById('up-url').value = s.url || '';
+    document.getElementById('up-target').value = s.target || '';
+    document.getElementById('up-deadline').value = s.deadline === '미정' ? '' : (s.deadline || '');
+    document.getElementById('up-field').value = s.field || '인문대학';
+    onFieldChange();
+    document.getElementById('up-dept').value = s.dept || '';
+    openModal('uploadModal');
+  };
+
+  // ── 설문 삭제 ──
+  window.deleteSurvey = async function (id) {
+    if (!confirm('정말 이 설문을 삭제하시겠습니까?')) return;
+    try {
+      if (!id.startsWith('demo-')) await deleteDoc(doc(db, 'surveys', id));
+      surveysCache = surveysCache.filter(s => s.id !== id);
+      renderCards();
+      showToast('설문이 삭제되었습니다.');
+    } catch (e) { showToast('삭제 실패: ' + e.message); }
+  };
+
+  // ── 상세 보기 ──
+  window.openDetail = async function (id) {
+    const s = surveysCache.find(x => x.id === id);
+    if (!s) return;
+    try { if (!s.isDemo) await updateDoc(doc(db, 'surveys', id), { views: increment(1) }); } catch {}
+    s.views = (s.views || 0) + 1;
+    const pct = Math.min(Math.round(((s.responses || 0) / (s.target || 100)) * 100), 100);
+    const expired = isExpired(s.deadline);
+    const participated = userParticipatedIds.has(s.id);
+    const isOwner = currentUser && s.authorUid === currentUser.uid;
+
+    document.getElementById('detailContent').innerHTML = `
+      <div style="margin-bottom:18px;">
+        <div class="card-badges" style="margin-bottom:10px;">
+          <span class="tag">${s.field || ''}</span>
+          <span class="tag">${s.authorRole || ''}</span>
+          ${s.verified ? '<span class="tag verified">✓ 인증된 연구자</span>' : ''}
+          ${expired ? '<span class="tag expired-tag">마감</span>' : ''}
+          ${participated ? '<span class="tag participated">✓ 참여완료</span>' : ''}
+        </div>
+        <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:6px;line-height:1.4;">${s.title}</h2>
+        <div style="font-size:13px;color:var(--muted);">${s.authorName || ''} · ${s.univ || ''} · 마감 ${s.deadline || '미정'}</div>
+      </div>
+      <div class="detail-stats">
+        <div class="stat"><div class="stat-num">${s.responses || 0}</div><div class="stat-label">응답 수</div></div>
+        <div class="stat"><div class="stat-num">${s.target || 100}</div><div class="stat-label">목표</div></div>
+        <div class="stat"><div class="stat-num">${pct}%</div><div class="stat-label">달성률</div></div>
+        <div class="stat"><div class="stat-num">${s.views}</div><div class="stat-label">조회</div></div>
+      </div>
+      <p style="font-size:14px;line-height:1.75;margin-bottom:18px;color:var(--text);">${s.desc || ''}</p>
+      <div class="survey-link-box">
+        <a href="${s.url}" target="_blank" rel="noopener">${s.url}</a>
+        <button class="btn btn-ghost btn-sm" onclick="copyLink('${s.url}')">복사</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${!expired && !participated
+          ? `<button class="btn btn-primary" style="flex:1;" onclick="requireLogin('participate','${s.id}')">설문 참여하기 →</button>`
+          : `<button class="btn" style="flex:1;background:var(--tag-bg);color:var(--muted);cursor:default;" disabled>${expired ? '마감된 설문입니다' : '이미 참여한 설문입니다'}</button>`}
+        ${!isOwner ? `<button class="btn btn-sm" style="background:var(--red-light);color:var(--red);" onclick="openReportModal('${s.id}')">🚩 신고</button>` : ''}
+        <button class="btn btn-ghost" onclick="closeModal('detailModal')" style="color:var(--text);border-color:var(--border);">닫기</button>
+      </div>`;
+    openModal('detailModal');
+    renderCards();
+  };
+
+  // ── 참여하기 ──
+  window.participateSurvey = async function (id) {
+    const s = surveysCache.find(x => x.id === id);
+    if (!s) return;
+    try {
+      if (!s.isDemo) await updateDoc(doc(db, 'surveys', id), { responses: increment(1) });
+      s.responses = (s.responses || 0) + 1;
+      if (currentUser) {
+        userParticipatedIds.add(id);
+        await setDoc(doc(db, 'users', currentUser.uid), { participatedSurveyIds: arrayUnion(id) }, { merge: true });
+      }
+    } catch (e) { console.error(e); }
+    closeModal('detailModal');
+    updateNav();
+    renderCards();
+    showToast('설문 참여 감사합니다! 🙏');
+    window.open(s.url, '_blank');
+  };
+
+  // ── 프로필 ──
+  window.openProfile = function () {
+    if (!currentUser) return;
+    const count = userParticipatedIds.size;
+    const mysurveys = surveysCache.filter(s => s.authorUid === currentUser.uid);
+    const dots = [0,1,2].map(i => `<div class="gate-dot${i < count ? ' filled' : ''}"></div>`).join('');
+    const genderLabel = { male: '남성', female: '여성', other: '기타/선택 안 함' };
+    const hasDemographics = !!userDemographics.birthYear;
+    const age = hasDemographics ? new Date().getFullYear() - userDemographics.birthYear : null;
+
+    document.getElementById('profileContent').innerHTML = `
+      <div class="profile-header">
+        <div class="profile-avatar">${(currentUser.name || 'U')[0].toUpperCase()}</div>
+        <div class="profile-info">
+          <h3>${currentUser.name || '사용자'}${currentUser.verified ? ' <span style="color:var(--accent);font-size:13px;">✓</span>' : ''}</h3>
+          <p>${currentUser.role || ''} · ${currentUser.univ || ''}</p>
+          <p style="font-size:12px;color:var(--subtle);margin-top:2px;">${currentUser.email}</p>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--subtle);">맞춤 추천 인적사항</span>
+          <button class="btn btn-sm" style="background:var(--tag-bg);color:var(--text);padding:4px 10px;" onclick="toggleDemoEdit()">수정</button>
+        </div>
+        <div id="demoDisplay">
+          ${hasDemographics
+            ? `<p style="font-size:13px;color:var(--text);">${genderLabel[userDemographics.gender] || ''} · ${userDemographics.birthYear}년생 (만 ${age}세)</p>`
+            : `<p style="font-size:13px;color:var(--subtle);">인적사항을 등록하면 맞춤 설문 추천을 받을 수 있습니다.</p>`}
+        </div>
+        <div id="demoEdit" style="display:none;margin-top:10px;">
+          <div style="display:flex;gap:10px;margin-bottom:10px;">
+            <select id="edit-gender" style="flex:1;">
+              <option value="">성별 선택</option>
+              <option value="male" ${userDemographics.gender==='male'?'selected':''}>남성</option>
+              <option value="female" ${userDemographics.gender==='female'?'selected':''}>여성</option>
+              <option value="other" ${userDemographics.gender==='other'?'selected':''}>기타 / 선택 안 함</option>
+            </select>
+            <input type="number" id="edit-birthyear" placeholder="출생연도 (예: 1998)" min="1940" max="2010" value="${userDemographics.birthYear||''}" style="flex:1;" />
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="saveDemographics()">저장</button>
+        </div>
+      </div>
+
+      <div class="upload-gate">
+        <p>${count >= 3 ? '✅ 설문 올리기 가능합니다!' : `설문을 올리려면 ${3 - count}개를 더 응답해야 합니다.`}</p>
+        <div class="gate-dots">${dots}</div>
+      </div>
+      <div class="profile-stats">
+        <div class="profile-stat"><div class="profile-stat-num">${count}</div><div class="profile-stat-label">참여한 설문</div></div>
+        <div class="profile-stat"><div class="profile-stat-num">${mysurveys.length}</div><div class="profile-stat-label">올린 설문</div></div>
+      </div>
+      ${mysurveys.length > 0 ? `
+      <div class="profile-section-title">내가 올린 설문</div>
+      <div class="profile-survey-list">
+        ${mysurveys.map(s => `
+          <div class="profile-survey-item">
+            <h4>${s.title}</h4>
+            <p>${s.responses || 0}명 응답 · ${s.deadline || '미정'} 마감</p>
+            <div class="profile-survey-actions">
+              <button class="btn btn-sm" style="background:var(--tag-bg);color:var(--text);" onclick="closeModal('profileModal');openEditSurvey('${s.id}')">수정</button>
+              <button class="btn btn-sm" style="background:var(--red-light);color:var(--red);" onclick="closeModal('profileModal');deleteSurvey('${s.id}')">삭제</button>
+            </div>
+          </div>`).join('')}
+      </div>` : ''}
+      <hr class="divider" />
+      <button class="btn btn-ghost btn-block" style="color:var(--text);border-color:var(--border);margin-top:4px;" onclick="closeModal('profileModal')">닫기</button>`;
+    openModal('profileModal');
+  };
+
+  window.toggleDemoEdit = function () {
+    const ed = document.getElementById('demoEdit');
+    ed.style.display = ed.style.display === 'none' ? 'block' : 'none';
+  };
+
+  window.saveDemographics = async function () {
+    const gender = document.getElementById('edit-gender').value;
+    const birthYear = parseInt(document.getElementById('edit-birthyear').value);
+    if (!gender || !(birthYear >= 1940 && birthYear <= 2010)) {
+      showToast('성별과 올바른 출생연도를 입력해 주세요.');
+      return;
+    }
+    try {
+      await setDoc(doc(db, 'users', currentUser.uid), { demographics: { gender, birthYear } }, { merge: true });
+      userDemographics = { gender, birthYear };
+      showToast('인적사항이 저장되었습니다.');
+      closeModal('profileModal');
+      renderCards();
+    } catch { showToast('저장에 실패했습니다.'); }
+  };
+
+  // ── 신고 ──
+  window.openReportModal = function (id) {
+    reportingId = id;
+    closeModal('detailModal');
+    openModal('reportModal');
+  };
+
+  window.submitReport = async function () {
+    if (!currentUser) { showToast('로그인 후 신고할 수 있습니다.'); return; }
+    const reason = document.getElementById('report-reason').value;
+    try {
+      await addDoc(collection(db, 'reports'), { surveyId: reportingId, reporterUid: currentUser.uid, reason, createdAt: serverTimestamp() });
+      showToast('신고가 접수되었습니다. 감사합니다.');
+    } catch { showToast('신고 접수에 실패했습니다.'); }
+    closeModal('reportModal');
+    reportingId = null;
+  };
+
+  // ── 링크 복사 ──
+  window.copyLink = function (url) {
+    navigator.clipboard.writeText(url).then(() => showToast('링크를 복사했습니다.'));
+  };
+
+  // ── 토스트 ──
+  window.showToast = function (msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  };
+
+  // 드롭다운 외부 클릭 시 닫기
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.fdrop')) {
+      document.querySelectorAll('.fdrop.open').forEach(d => d.classList.remove('open'));
+    }
+  });
+</script>
+</body>
+</html>
