@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // surveys: public read, verified-email create, owner update/delete
+    match /surveys/{surveyId} {
+      allow read: if true;
+
+      allow create: if request.auth != null
+                    && request.auth.token.email_verified;
+
+      allow update: if request.auth != null && (
+        // 글쓴이는 모든 필드 수정 가능
+        resource.data.authorUid == request.auth.uid
+        // 누구나 조회수 증가 가능
+        || request.resource.data.diff(resource.data).changedKeys().hasOnly(['views'])
+        // 인증된 사용자는 응답수 증가 가능
+        || (request.resource.data.diff(resource.data).changedKeys().hasOnly(['responses'])
+            && request.auth.token.email_verified)
+        // AI 분석 결과(targetDemo) 업데이트는 글쓴이만
+        || (request.resource.data.diff(resource.data).changedKeys().hasOnly(['targetDemo'])
+            && resource.data.authorUid == request.auth.uid)
+      );
+
+      allow delete: if request.auth != null
+                    && resource.data.authorUid == request.auth.uid;
+    }
+
+    // users: 본인 문서만 읽고 쓸 수 있음
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+
+    // reports: 인증된 사용자만 신고 생성; 읽기는 관리자 SDK 전용
+    match /reports/{reportId} {
+      allow create: if request.auth != null
+                    && request.auth.token.email_verified;
+      allow read, update, delete: if false;
+    }
+  }
+}

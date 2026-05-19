@@ -1,0 +1,15 @@
+# API 키 — 절대 올리지 마세요
+.env
+
+# 실험 데이터 (용량 큼)
+output/
+data/
+__pycache__/
+*.pyc
+
+# 임시 파일
+_tmp_*.py
+*.sas
+*.sps
+*.sav
+*.zip

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lisnu — AI가 한국인을 얼마나 잘 흉내낼 수 있을까</title>
+  <meta name="description" content="통계청 사회조사 데이터 기반 AI 페르소나 시뮬레이션. GPT-4o-mini와 Claude Haiku가 300명의 한국인 페르소나로 실제 설문에 응답합니다." />
+  <meta property="og:title" content="Lisnu — AI 한국인 페르소나 시뮬레이션" />
+  <meta property="og:description" content="AI가 한국인을 얼마나 잘 흉내낼 수 있을까? 통계청 데이터 기반 페르소나 시뮬레이션 연구." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232563eb'/><text x='16' y='23' text-anchor='middle' fill='white' font-family='system-ui,sans-serif' font-weight='900' font-size='14' letter-spacing='-0.5'>Li</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #080c14;
+      --white: #ffffff;
+      --blue: #2563eb;
+      --blue-light: #60a5fa;
+      --blue-dim: rgba(37,99,235,0.15);
+      --gray: #f3f4f6;
+      --navy: #0f172a;
+      --muted: #94a3b8;
+    }
+
+    html { scroll-snap-type: y mandatory; overflow-y: scroll; height: 100%; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--black); color: var(--white); overflow-x: hidden; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      padding: 20px 48px; display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.4s, backdrop-filter 0.4s, padding 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(8,12,20,0.85); backdrop-filter: blur(16px);
+      padding: 14px 48px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; }
+    .wordmark {
+      font-family: 'Space Grotesk', 'DM Sans', sans-serif;
+      font-size: 1.22rem; font-weight: 800; letter-spacing: -0.055em; color: var(--white);
+    }
+    .wordmark .wa { color: #60a5fa; }
+    .nav-divider { width: 1px; height: 18px; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+    .nav-univ-logo { height: 18px; width: auto; filter: brightness(0) invert(1); opacity: 0.85; }
+    .nav-cta {
+      padding: 9px 22px; background: var(--blue); color: var(--white);
+      border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: background 0.18s, transform 0.18s;
+    }
+    .nav-cta:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .nav-cta.ghost { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); }
+    .nav-cta.ghost:hover { background: rgba(255,255,255,0.15); transform: translateY(-1px); }
+
+    /* ── HERO WORD ANIMATION ── */
+    .ha-word { display: inline-block; }
+    .ha-up { font-size: 0.82em; -webkit-text-fill-color: rgba(255,255,255,0.45) !important; background: none; }
+
+    body.ready .ha-word { opacity: 0; }
+    body.ready .ha-left {
+      transform: translateY(24px);
+      transition: opacity 1.05s cubic-bezier(0.16,1,0.3,1), transform 1.05s cubic-bezier(0.16,1,0.3,1);
+    }
+    body.ready .ha-right {
+      transform: translateY(24px);
+      transition: opacity 1.05s cubic-bezier(0.16,1,0.3,1) 0.52s, transform 1.05s cubic-bezier(0.16,1,0.3,1) 0.52s;
+    }
+    body.ready .ha-up {
+      transform: translateY(24px);
+      transition: opacity 1.05s cubic-bezier(0.16,1,0.3,1) 1.08s, transform 1.05s cubic-bezier(0.16,1,0.3,1) 1.08s;
+    }
+    .hero-anim.go .ha-word { opacity: 1; transform: none !important; }
+
+    /* connection visual */
+    .hero-connection {
+      display: flex; align-items: center; gap: 22px;
+      justify-content: center; margin: 4px auto 24px;
+      max-width: 440px;
+      transition: opacity 0.7s 1.15s;
+    }
+    body.ready .hero-connection { opacity: 0; }
+    .hero-anim.go ~ .hero-connection { opacity: 1; }
+    .hcon-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(255,255,255,0.28); white-space: nowrap;
+    }
+    .hcon-label.blue { color: rgba(96,165,250,0.55); }
+    .hcon-line {
+      position: relative; flex: 1; height: 18px; display: flex; align-items: center;
+    }
+    .hcon-track {
+      position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+      height: 1.5px; border-radius: 2px; background: rgba(255,255,255,0.08);
+    }
+    .hcon-fill {
+      position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      height: 1.5px; border-radius: 2px; width: 0%;
+      background: linear-gradient(to right, rgba(255,255,255,0.2), rgba(96,165,250,0.7));
+    }
+    .hcon-dot {
+      position: absolute; left: 0; top: 50%; transform: translate(-50%, -50%);
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #60a5fa; box-shadow: 0 0 12px rgba(96,165,250,0.9);
+      opacity: 0;
+    }
+    .hcon-endcap {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 5px; height: 5px; border-radius: 50%; opacity: 0;
+    }
+    .hcon-endcap-l { left: 0; transform: translate(-50%, -50%); background: rgba(255,255,255,0.35); }
+    .hcon-endcap-r { right: 0; transform: translate(50%, -50%); background: #60a5fa; box-shadow: 0 0 8px rgba(96,165,250,0.8); }
+    .hero-anim.go ~ .hero-connection .hcon-fill {
+      animation: hcLineFill 1.0s cubic-bezier(0.4,0,0.2,1) 1.25s forwards;
+    }
+    .hero-anim.go ~ .hero-connection .hcon-dot {
+      animation: hcDotTravel 1.0s cubic-bezier(0.4,0,0.2,1) 1.25s forwards;
+    }
+    .hero-anim.go ~ .hero-connection .hcon-endcap-l {
+      animation: hcEndcapIn 0.35s ease 1.18s forwards;
+    }
+    .hero-anim.go ~ .hero-connection .hcon-endcap-r {
+      animation: hcEndcapIn 0.35s ease 2.2s forwards, hcPulseR 2.2s ease 2.55s infinite;
+    }
+    @keyframes hcLineFill { to { width: 100%; } }
+    @keyframes hcDotTravel {
+      0% { left: 0%; opacity: 0; }
+      8% { opacity: 1; }
+      88% { opacity: 1; }
+      100% { left: 100%; opacity: 0; }
+    }
+    @keyframes hcEndcapIn { to { opacity: 0.7; } }
+    @keyframes hcPulseR {
+      0%, 100% { box-shadow: 0 0 8px rgba(96,165,250,0.8); transform: translate(50%,-50%) scale(1); }
+      50% { box-shadow: 0 0 0 6px rgba(96,165,250,0); transform: translate(50%,-50%) scale(1.3); }
+    }
+
+    /* ── HERO CINEMATIC STAGE ── */
+    .hero-stage { position: relative; margin-bottom: 16px; }
+    #heroPhrase {
+      transition: opacity 0.85s cubic-bezier(0.4,0,0.6,1), transform 0.85s cubic-bezier(0.4,0,0.6,1);
+    }
+    #heroPhrase.out { opacity: 0; transform: translateY(-18px); pointer-events: none; }
+    #heroWordmark {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+      transition: opacity 1s cubic-bezier(0.16,1,0.3,1);
+    }
+    body.ready #heroWordmark { opacity: 0; transform: translateY(12px); }
+    #heroWordmark { transition: opacity 1.4s cubic-bezier(0.16,1,0.3,1), transform 1.4s cubic-bezier(0.16,1,0.3,1); }
+    #heroWordmark.in { opacity: 1 !important; transform: none !important; pointer-events: auto; }
+    .hero-wordmark-big {
+      font-family: 'Space Grotesk', 'DM Sans', sans-serif;
+      font-size: clamp(2.6rem, 7vw, 5rem);
+      font-weight: 800; letter-spacing: -0.055em;
+      color: white; -webkit-text-fill-color: initial; background: none;
+    }
+    .hero-wordmark-big .wa { color: #60a5fa; }
+    #heroSub, #heroBtns {
+      transition: opacity 1.0s cubic-bezier(0.16,1,0.3,1), transform 1.0s cubic-bezier(0.16,1,0.3,1);
+    }
+    body.ready #heroSub, body.ready #heroBtns {
+      opacity: 0; transform: translateY(16px);
+    }
+    #heroSub.in { opacity: 1 !important; transform: none !important; }
+    #heroBtns.in { opacity: 1 !important; transform: none !important; transition-delay: 0.15s; }
+
+    /* ── SECTIONS ── */
+    section {
+      height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 0 48px; position: relative; overflow: hidden;
+      scroll-snap-align: start;
+    }
+    .section-inner { max-width: 1100px; width: 100%; }
+
+    /* ── ANIMATION BASE ── */
+    [data-anim] {
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    body.ready [data-anim] { opacity: 0; }
+    [data-anim="up"]     { transform: translateY(48px); }
+    [data-anim="left"]   { transform: translateX(-60px); }
+    [data-anim="right"]  { transform: translateX(60px); }
+    [data-anim="scale"]  { transform: scale(0.88); }
+    [data-anim="fade"]   { transform: none; }
+    [data-anim].visible  { opacity: 1 !important; transform: none !important; }
+
+    .delay-1 { transition-delay: 0.1s; }
+    .delay-2 { transition-delay: 0.22s; }
+    .delay-3 { transition-delay: 0.36s; }
+    .delay-4 { transition-delay: 0.52s; }
+
+    /* ── EYEBROW ── */
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--blue-light);
+      background: var(--blue-dim); padding: 6px 14px; border-radius: 20px;
+      margin-bottom: 24px;
+    }
+    .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue-light); }
+
+    /* ── SECTION 1: HERO ── */
+    #s1 { background: var(--black); text-align: center; }
+    #s1::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(37,99,235,0.18) 0%, transparent 70%);
+      pointer-events: none; z-index: 2;
+    }
+    .hero-photo {
+      position: absolute; inset: 0;
+      background-image: url('./snu_ui_download.png');
+      background-size: auto 520px;
+      background-position: 22% 47%;
+      background-repeat: no-repeat;
+      filter: grayscale(100%) brightness(1.1) contrast(0.9);
+      z-index: 0;
+    }
+    .hero-photo-overlay {
+      position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,12,20,0.45) 0%,
+        rgba(8,12,20,0.55) 40%,
+        rgba(8,12,20,0.80) 75%,
+        rgba(8,12,20,0.97) 100%
+      );
+    }
+    .grid-bg { z-index: 2; }
+    #s1 .section-inner { position: relative; z-index: 3; padding-top: 5vh; }
+    #s1 .scroll-hint { z-index: 3; }
+    .grid-bg {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.04;
+      background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-num {
+      font-size: clamp(3.4rem, 9vw, 7rem); font-weight: 900;
+      letter-spacing: -0.05em; line-height: 0.95;
+      background: linear-gradient(135deg, #fff 30%, rgba(255,255,255,0.4));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .hero-num .blue { background: none; -webkit-text-fill-color: #60a5fa; }
+    .hero-sub {
+      font-size: clamp(0.95rem, 2vw, 1.2rem); color: rgba(255,255,255,0.55);
+      max-width: 520px; margin: 0 auto 32px; line-height: 1.7; font-weight: 400;
+    }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-big {
+      padding: 16px 36px; border-radius: 12px; font-family: 'DM Sans', sans-serif;
+      font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+      border: none; letter-spacing: -0.01em; text-decoration: none; display: inline-block;
+    }
+    .btn-big.primary { background: var(--blue); color: var(--white); }
+    .btn-big.primary:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 12px 32px rgba(37,99,235,0.4); }
+    .btn-big.ghost { background: rgba(255,255,255,0.08); color: var(--white); border: 1px solid rgba(255,255,255,0.15); }
+    .btn-big.ghost:hover { background: rgba(255,255,255,0.14); }
+    .scroll-hint {
+      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: rgba(255,255,255,0.3); font-size: 12px; font-weight: 500; letter-spacing: 0.08em;
+      text-transform: uppercase;
+      animation: bounce 2s infinite;
+      opacity: 0; transition: opacity 0.8s ease;
+    }
+    .scroll-hint svg { opacity: 0.4; }
+    @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+    /* ── SECTION 2: HOW IT WORKS ── */
+    #s2 { background: var(--white); color: #111827; }
+    .split { display: flex; align-items: center; gap: 80px; width: 100%; }
+    .split.reverse { flex-direction: row-reverse; }
+    .split-text { flex: 1; min-width: 0; }
+    .split-visual { flex: 1; min-width: 0; }
+    .section-num {
+      font-size: 11px; font-weight: 800; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--blue); margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.15; margin-bottom: 16px; color: #111827;
+    }
+    .section-title .accent { color: var(--blue); }
+    .section-desc { font-size: 1.05rem; color: #6b7280; line-height: 1.75; }
+    .section-desc strong { color: #111827; }
+
+    /* Step flow */
+    .step-flow { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 28px; }
+    .step-item { display: flex; align-items: flex-start; gap: 13px; }
+    .step-num-c {
+      width: 34px; height: 34px; min-width: 34px; border-radius: 50%;
+      background: #eff6ff; color: #2563eb;
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;
+    }
+    .step-text h4 { font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 3px; }
+    .step-text p { font-size: 12px; color: #6b7280; line-height: 1.55; }
+
+    /* Persona card mockup */
+    .persona-mock {
+      background: white; border: 1px solid #e5e7eb; border-radius: 16px; padding: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.05);
+      max-width: 290px; margin: 0 auto;
+    }
+    .pm-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #f3f4f6; }
+    .pm-avatar { width: 42px; height: 42px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .pm-name { font-size: 14px; font-weight: 700; color: #111827; }
+    .pm-id { font-size: 11px; color: #9ca3af; }
+    .pm-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+    .pm-tag { padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .pm-tag.gray { background: #f3f4f6; color: #6b7280; }
+    .pm-tag.blue { background: #eff6ff; color: #2563eb; }
+    .pm-prompt {
+      background: #f8fafc; border-left: 3px solid #2563eb;
+      padding: 10px 12px; border-radius: 0 6px 6px 0;
+      font-size: 11px; color: #6b7280; line-height: 1.65; font-style: italic;
+    }
+
+    /* ── SECTION 3: RESULTS ── */
+    #s3 { background: var(--navy); }
+    #s3 .section-title { color: var(--white); }
+    #s3 .section-desc { color: var(--muted); }
+
+    .result-nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin: 36px 0 32px; }
+    .rn-card { text-align: center; }
+    .rn-big {
+      font-size: clamp(2.6rem, 5vw, 4rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+      background: linear-gradient(135deg, var(--blue-light) 0%, rgba(255,255,255,0.9) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .rn-label { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+    .rn-sep { width: 1px; background: rgba(255,255,255,0.08); margin: 0 auto; }
+
+    .finding-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .fc {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 20px; transition: border-color 0.25s, background 0.25s;
+    }
+    .fc:hover { border-color: rgba(96,165,250,0.25); background: rgba(255,255,255,0.06); }
+    .fc.accent { border-color: rgba(96,165,250,0.28); background: rgba(37,99,235,0.1); }
+    .fc-icon { font-size: 1.5rem; margin-bottom: 10px; }
+    .fc h3 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 5px; }
+    .fc p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    /* ── SECTION 4: DISCOVERY ── */
+    #s4 { background: #f8fafc; color: #111827; }
+
+    .disc-card {
+      background: white; border: 1px solid #e5e7eb; border-radius: 16px; padding: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.08); max-width: 340px; margin: 0 auto;
+    }
+    .disc-q-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+    .disc-question { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #f3f4f6; }
+    .disc-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 9px; }
+    .disc-model { font-size: 11px; font-weight: 700; width: 54px; min-width: 54px; color: #9ca3af; padding-top: 1px; }
+    .disc-answer { font-size: 13px; color: #374151; }
+    .disc-answer.wrong { color: #dc2626; }
+    .disc-answer.ok { color: #16a34a; font-weight: 700; }
+    .disc-sep { height: 1px; background: #f3f4f6; margin: 14px 0; }
+    .disc-note { font-size: 11px; color: #9ca3af; line-height: 1.5; }
+
+    /* ── SECTION 5: CTA ── */
+    #s5 { background: var(--blue); text-align: center; }
+    #s5::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(255,255,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-title {
+      font-size: clamp(2.2rem, 5.5vw, 4.5rem); font-weight: 900;
+      letter-spacing: -0.05em; line-height: 1.08; color: white;
+      margin-bottom: 20px;
+    }
+    .cta-sub { font-size: 1.1rem; color: rgba(255,255,255,0.7); margin-bottom: 40px; font-weight: 400; line-height: 1.6; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .btn-white {
+      padding: 18px 48px; background: white; color: var(--blue);
+      border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif;
+      font-size: 17px; font-weight: 800; cursor: pointer; letter-spacing: -0.02em;
+      transition: all 0.2s; text-decoration: none; display: inline-block;
+    }
+    .btn-white:hover { transform: translateY(-3px); box-shadow: 0 16px 48px rgba(0,0,0,0.25); }
+
+    /* SNU badge */
+    .snu-badge {
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      margin-bottom: 32px; opacity: 0.85;
+    }
+    .snu-logo-img { height: 26px; width: auto; filter: brightness(0) invert(1); }
+    .snu-badge-divider { width: 1px; height: 22px; background: rgba(255,255,255,0.3); }
+    .snu-badge-text { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.5; text-align: left; }
+
+    /* ── SLIDE NAV DOTS ── */
+    .slide-nav {
+      position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 10px; z-index: 400;
+    }
+    .slide-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.3); cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+      border: none; padding: 0;
+    }
+    .slide-dot.active { background: #fff; transform: scale(1.5); }
+    .slide-dot.dark { background: rgba(0,0,0,0.2); }
+    .slide-dot.dark.active { background: #2563eb; }
+
+    /* ── FOOTER ── */
+    .footer-inline {
+      position: absolute; bottom: 28px; left: 0; right: 0; text-align: center;
+      font-size: 12px; color: rgba(255,255,255,0.3); pointer-events: none;
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      nav { padding: 16px 20px; }
+      nav.scrolled { padding: 12px 20px; }
+      section { padding: 0 20px; }
+      .split, .split.reverse { flex-direction: column; gap: 36px; }
+      .step-flow { grid-template-columns: 1fr; gap: 14px; }
+      .result-nums { grid-template-columns: 1fr; gap: 16px; }
+      .finding-grid { grid-template-columns: 1fr; gap: 12px; }
+      .slide-nav { display: none; }
+      .section-title { font-size: clamp(1.6rem, 5vw, 2.5rem); }
+      .persona-mock, .disc-card { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav id="nav">
+  <div class="nav-logo">
+    <span class="wordmark">Li<span class="wa">snu</span></span>
+    <div class="nav-divider"></div>
+    <img src="./snu_ui_download.png" class="nav-univ-logo" alt="서울대학교" />
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="nav-cta ghost" onclick="location.href='app.html'">연구 결과</button>
+    <button class="nav-cta" onclick="location.href='simulator.html'">시뮬레이터 실행</button>
+  </div>
+</nav>
+
+<!-- ── SLIDE NAV ── -->
+<div class="slide-nav" id="slideNav">
+  <button class="slide-dot active" data-target="s1" aria-label="1번"></button>
+  <button class="slide-dot" data-target="s2" aria-label="2번"></button>
+  <button class="slide-dot" data-target="s3" aria-label="3번"></button>
+  <button class="slide-dot" data-target="s4" aria-label="4번"></button>
+  <button class="slide-dot" data-target="s5" aria-label="5번"></button>
+</div>
+
+<!-- ── SECTION 1: HERO ── -->
+<section id="s1">
+  <div class="hero-photo"></div>
+  <div class="hero-photo-overlay"></div>
+  <div class="grid-bg"></div>
+  <div class="section-inner" style="text-align:center;">
+    <div data-anim="up">
+      <div class="eyebrow"><div class="dot"></div>AI 한국인 페르소나 시뮬레이션</div>
+    </div>
+    <div class="hero-stage">
+      <div id="heroPhrase">
+        <div class="hero-num hero-anim" id="heroNum">
+          <span class="ha-word ha-left">AI가</span><br/>
+          <span class="blue ha-word ha-right">한국인을</span><br/>
+          <span class="ha-word ha-up">흉내낸다면?</span>
+        </div>
+        <div class="hero-connection">
+          <span class="hcon-label">AI 페르소나</span>
+          <div class="hcon-line">
+            <div class="hcon-track"></div>
+            <div class="hcon-fill"></div>
+            <div class="hcon-dot"></div>
+            <div class="hcon-endcap hcon-endcap-l"></div>
+            <div class="hcon-endcap hcon-endcap-r"></div>
+          </div>
+          <span class="hcon-label blue">실제 한국인</span>
+        </div>
+      </div>
+      <div id="heroWordmark">
+        <span class="hero-wordmark-big">Li<span class="wa">snu</span></span>
+      </div>
+    </div>
+    <p class="hero-sub" id="heroSub">
+      통계청 사회조사 데이터로 만든 300명의 AI 페르소나가<br/>실제 한국인의 응답 분포를 얼마나 재현할 수 있을까요?
+    </p>
+    <div class="hero-btns" id="heroBtns">
+      <a href="simulator.html" class="btn-big primary">시뮬레이터 체험하기</a>
+      <button class="btn-big ghost" onclick="goToSection('s2')">연구 소개 보기</button>
+    </div>
+  </div>
+  <div class="scroll-hint" onclick="goToSection('s2')" style="cursor:pointer;">
+    <svg width="16" height="22" viewBox="0 0 16 22" fill="none">
+      <rect x="1" y="1" width="14" height="20" rx="7" stroke="white" stroke-width="1.5"/>
+      <rect x="6.5" y="5" width="3" height="5" rx="1.5" fill="white"/>
+    </svg>
+    아래로
+  </div>
+</section>
+
+<!-- ── SECTION 2: HOW IT WORKS ── -->
+<section id="s2">
+  <div class="section-inner">
+    <div class="split">
+      <div class="split-text">
+        <div class="section-num" data-anim="up">01 — 방법론</div>
+        <h2 class="section-title" data-anim="up" style="transition-delay:0.1s">
+          어떻게 <span class="accent">AI 페르소나</span>를<br/>만드나요?
+        </h2>
+        <p class="section-desc" data-anim="up" style="transition-delay:0.2s">
+          통계청 사회조사의 실제 응답자 데이터를 기반으로<br/>
+          <strong>나이, 성별, 학력, 지역, 소득, 직업</strong> 등 인구통계를 추출합니다.
+        </p>
+        <div class="step-flow" data-anim="up" style="transition-delay:0.3s">
+          <div class="step-item">
+            <div class="step-num-c">1</div>
+            <div class="step-text">
+              <h4>데이터 추출</h4>
+              <p>통계청 사회조사<br/>35,417명 중 300명 샘플링</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num-c">2</div>
+            <div class="step-text">
+              <h4>페르소나 생성</h4>
+              <p>인구통계를 한국어<br/>시스템 프롬프트로 구성</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num-c">3</div>
+            <div class="step-text">
+              <h4>LLM 응답</h4>
+              <p>GPT-4o-mini · Claude Haiku가<br/>각 페르소나로 설문에 답변</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num-c">4</div>
+            <div class="step-text">
+              <h4>정확도 검증</h4>
+              <p>갤럽·소비자원 실제 데이터와<br/>MAE 기반 정확도 비교</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="split-visual" data-anim="right" style="transition-delay:0.15s">
+        <div class="persona-mock">
+          <div class="pm-header">
+            <div class="pm-avatar">🧑</div>
+            <div>
+              <div class="pm-name">페르소나 #147</div>
+              <div class="pm-id">통계청 사회조사 2023 기반</div>
+            </div>
+          </div>
+          <div class="pm-tags">
+            <span class="pm-tag gray">34세</span>
+            <span class="pm-tag gray">여성</span>
+            <span class="pm-tag gray">서울</span>
+            <span class="pm-tag gray">대졸</span>
+            <span class="pm-tag blue">사무직</span>
+            <span class="pm-tag gray">월 300만원대</span>
+          </div>
+          <div class="pm-prompt">
+            "당신은 34세 서울 거주 여성으로, 4년제 대학을 졸업하고 사무직에 종사하고 있습니다. 월 소득은 300만원대이며, 기혼자입니다. 다음 설문에 이 정보를 바탕으로 솔직하게 답해주세요."
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 3: RESULTS ── -->
+<section id="s3">
+  <div class="section-inner" style="text-align:center;">
+    <div class="section-num" data-anim="up" style="color:var(--blue-light)">02 — 실험 결과</div>
+    <h2 class="section-title" data-anim="up" style="transition-delay:0.1s;color:white;">
+      실제 한국인 데이터와<br/><span style="color:var(--blue-light)">비교했더니</span>
+    </h2>
+
+    <div class="result-nums" data-anim="up" style="transition-delay:0.2s">
+      <div class="rn-card">
+        <div class="rn-big">97.7%</div>
+        <div class="rn-label">Claude 최고 정확도<br/>(G5 탄핵 직후 정당지지)</div>
+      </div>
+      <div class="rn-card">
+        <div class="rn-big">300명</div>
+        <div class="rn-label">AI 페르소나<br/>(통계청 2023 기반)</div>
+      </div>
+      <div class="rn-card">
+        <div class="rn-big">~90%</div>
+        <div class="rn-label">GPT 정치 문항<br/>평균 정확도</div>
+      </div>
+    </div>
+
+    <div class="finding-grid" data-anim="up" style="transition-delay:0.3s">
+      <div class="fc accent">
+        <div class="fc-icon">🎯</div>
+        <h3>정치 문항은 90% 이상</h3>
+        <p>한국 정치·경제 관련 문항에서 GPT와 Claude 모두 실제 분포와 높은 일치를 보였습니다.</p>
+      </div>
+      <div class="fc">
+        <div class="fc-icon">🛍️</div>
+        <h3>소비 문항은 상대적으로 낮음</h3>
+        <p>여가·소비 문항에서는 정확도가 떨어졌습니다. 문화적 맥락이 필요한 영역입니다.</p>
+      </div>
+      <div class="fc">
+        <div class="fc-icon">✂️</div>
+        <h3>AI 컷오프 이후는 완전 실패</h3>
+        <p>파리 올림픽 인상적 선수 문항에서 두 모델 모두 학습 시점 이전 선수를 답했습니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 4: DISCOVERY ── -->
+<section id="s4">
+  <div class="section-inner">
+    <div class="split reverse">
+      <div class="split-text">
+        <div class="section-num" data-anim="up">03 — 발견한 한계</div>
+        <h2 class="section-title" data-anim="up" style="transition-delay:0.1s">
+          AI의 <span class="accent">한계</span>도<br/>발견했습니다
+        </h2>
+        <p class="section-desc" data-anim="up" style="transition-delay:0.2s">
+          <strong>파리 올림픽 인상적인 선수</strong>를 묻자 GPT는 2014년 소치의 김연아를, Claude는 존재하지 않는 선수 이름을 답했습니다.<br/><br/>
+          <strong>장래 대통령감</strong>을 묻자 GPT는 이재명 95%로 극단적 편향을 보였고, Claude는 응답을 거부했습니다. 실제 조사에서 이재명은 37%였습니다.
+        </p>
+        <div data-anim="up" style="transition-delay:0.32s">
+          <a href="app.html" style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--blue);text-decoration:none;">
+            전체 결과 보기 →
+          </a>
+        </div>
+      </div>
+      <div class="split-visual" data-anim="left" style="transition-delay:0.15s">
+        <div class="disc-card">
+          <div class="disc-q-label">G4 — 파리 올림픽 인상적인 선수</div>
+          <div class="disc-question">"2024 파리 올림픽에서 가장 인상적이었던 한국 선수는?"</div>
+          <div class="disc-row">
+            <div class="disc-model">GPT</div>
+            <div class="disc-answer wrong">김연아 36.0% ✗</div>
+          </div>
+          <div class="disc-row">
+            <div class="disc-model">Claude</div>
+            <div class="disc-answer wrong">임나영 71.1% ✗</div>
+          </div>
+          <div class="disc-sep"></div>
+          <div class="disc-row">
+            <div class="disc-model">실제</div>
+            <div class="disc-answer ok">안세영 39.0% ✓</div>
+          </div>
+          <div class="disc-note">AI 학습 컷오프(2024년 8월) 이전 데이터로 파리 올림픽 결과를 알 수 없었던 것으로 분석됩니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 5: CTA ── -->
+<section id="s5">
+  <div class="section-inner" style="position:relative;z-index:1;">
+    <div class="snu-badge" data-anim="up">
+      <img src="./snu_ui_download.png" class="snu-logo-img" alt="서울대학교" />
+      <div class="snu-badge-divider"></div>
+      <div class="snu-badge-text">서울대학교<br/>컴퓨팅 기초 연구 프로젝트 2026</div>
+    </div>
+    <div class="cta-title" data-anim="up" style="transition-delay:0.1s">
+      지금 직접<br/>실험해보세요
+    </div>
+    <p class="cta-sub" data-anim="up" style="transition-delay:0.2s">
+      원하는 인구통계를 설정하고, 질문을 던져보세요.<br/>AI 페르소나가 어떻게 대답하는지 확인할 수 있습니다.
+    </p>
+    <div data-anim="up" style="transition-delay:0.3s">
+      <a href="simulator.html" class="btn-white">시뮬레이터 시작하기 →</a>
+    </div>
+  </div>
+  <div class="footer-inline">© 2026 Lisnu · 서울대학교 컴퓨팅 기초 연구</div>
+</section>
+
+<script>
+  document.body.classList.add('ready');
+
+  // ── 히어로 시네마틱 시퀀스 ──
+  window.addEventListener('load', () => {
+    const heroNum      = document.getElementById('heroNum');
+    const heroPhrase   = document.getElementById('heroPhrase');
+    const heroWordmark = document.getElementById('heroWordmark');
+    const heroStage    = document.querySelector('.hero-stage');
+    const heroSub      = document.getElementById('heroSub');
+    const heroBtns     = document.getElementById('heroBtns');
+
+    setTimeout(() => heroNum && heroNum.classList.add('go'), 500);
+
+    setTimeout(() => {
+      heroPhrase && heroPhrase.classList.add('out');
+      if (heroStage) {
+        heroStage.style.height = heroStage.offsetHeight + 'px';
+        heroStage.style.overflow = 'hidden';
+      }
+    }, 3600);
+
+    setTimeout(() => {
+      if (heroStage) {
+        heroStage.style.transition = 'height 1.0s cubic-bezier(0.16,1,0.3,1)';
+        heroStage.style.height = '130px';
+      }
+    }, 3680);
+
+    setTimeout(() => heroWordmark && heroWordmark.classList.add('in'), 4300);
+    setTimeout(() => heroSub && heroSub.classList.add('in'), 5000);
+    setTimeout(() => heroBtns && heroBtns.classList.add('in'), 5220);
+    setTimeout(() => {
+      const hint = document.querySelector('.scroll-hint');
+      if (hint) hint.style.opacity = '1';
+    }, 6000);
+  });
+
+  // ── 풀페이지 슬라이드 내비게이션 ──
+  const SECTIONS = ['s1', 's2', 's3', 's4', 's5'];
+  const DARK_SECTIONS = new Set(['s2', 's4']);
+
+  window.goToSection = function(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  function updateDots(activeId) {
+    const isDark = DARK_SECTIONS.has(activeId);
+    document.querySelectorAll('.slide-dot').forEach(d => {
+      d.classList.toggle('active', d.dataset.target === activeId);
+      d.classList.toggle('dark', isDark);
+    });
+    const nav = document.getElementById('nav');
+    if (nav) nav.classList.toggle('scrolled', activeId !== 's1');
+  }
+
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && e.intersectionRatio >= 0.5) {
+        const id = e.target.id;
+        updateDots(id);
+        e.target.querySelectorAll('[data-anim]').forEach(el => el.classList.add('visible'));
+      }
+    });
+  }, { threshold: 0.5 });
+
+  SECTIONS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) sectionObserver.observe(el);
+  });
+
+  // 슬라이드 도트 클릭
+  document.querySelectorAll('.slide-dot').forEach(btn => {
+    btn.addEventListener('click', () => goToSection(btn.dataset.target));
+  });
+</script>
+</body>
+</html>
